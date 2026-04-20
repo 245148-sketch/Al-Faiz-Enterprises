@@ -22,12 +22,12 @@
     --glass: rgba(255,255,255,0.04);
     --glass-border: rgba(255,255,255,0.08);
     --metal: linear-gradient(135deg,#1c1c1c,#2a2a2a,#1c1c1c);
+    --hero-video-opacity: 0.45;
+    --hero-video-brightness: 1;
   }
 
   *{margin:0;padding:0;box-sizing:border-box;}
-
   html{scroll-behavior:smooth;}
-
   body{
     background:#050505;
     color:var(--white);
@@ -128,8 +128,25 @@
     font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;
     letter-spacing:1px;text-transform:uppercase;
     transition:all .3s;margin-left:10px;
+    position:relative;
   }
   .nav-admin-btn:hover{background:var(--yellow);color:#000;}
+
+  /* Unread badge on admin button */
+  .nav-admin-btn .msg-badge{
+    position:absolute;top:-6px;right:-6px;
+    background:var(--red);color:#fff;
+    width:18px;height:18px;border-radius:50%;
+    font-size:10px;font-weight:700;font-family:'Orbitron',sans-serif;
+    display:none;align-items:center;justify-content:center;
+    border:2px solid #050505;
+    animation:badgePulse 2s ease-in-out infinite;
+  }
+  .nav-admin-btn .msg-badge.show{display:flex;}
+  @keyframes badgePulse{
+    0%,100%{box-shadow:0 0 6px rgba(232,0,13,0.6);}
+    50%{box-shadow:0 0 14px rgba(232,0,13,1);}
+  }
 
   .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:5px;}
   .hamburger span{width:24px;height:2px;background:var(--white);transition:all .3s;display:block;}
@@ -142,7 +159,9 @@
   }
   #hero-video-bg{
     position:absolute;inset:0;width:100%;height:100%;
-    object-fit:cover;z-index:0;opacity:0.35;
+    object-fit:cover;z-index:0;
+    opacity:var(--hero-video-opacity);
+    filter:brightness(var(--hero-video-brightness));
   }
   .hero-overlay{
     position:absolute;inset:0;z-index:1;
@@ -166,33 +185,56 @@
     100%{background-position:60px 60px;}
   }
 
-  /* Road animation */
   .hero-road{
-    position:absolute;bottom:0;left:0;width:100%;height:200px;z-index:2;
-    overflow:hidden;
+    position:absolute;bottom:0;left:0;width:100%;height:230px;z-index:2;
+    overflow:hidden;pointer-events:none;
   }
-  .road-line{
-    position:absolute;bottom:80px;left:-100%;width:200%;height:3px;
-    background:repeating-linear-gradient(90deg,transparent 0,transparent 40px,var(--yellow) 40px,var(--yellow) 80px);
-    animation:roadMove 2s linear infinite;
+  .road-surface{
+    position:absolute;left:0;right:0;bottom:0;height:150px;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0) 38%),
+      linear-gradient(180deg,#131313 0%,#0d0d0d 60%,#070707 100%);
+    border-top:1px solid rgba(255,255,255,0.08);
   }
-  .road-line2{
-    bottom:100px;animation-duration:1.5s;opacity:0.5;
+  .road-glow{
+    position:absolute;left:0;right:0;bottom:145px;height:28px;
+    background:linear-gradient(90deg,rgba(255,215,0,0),rgba(255,215,0,0.22),rgba(255,215,0,0));
+    filter:blur(9px);opacity:0.55;
   }
-  @keyframes roadMove{to{transform:translateX(50%);}}
+  .lane-mark{
+    position:absolute;left:-140%;width:320%;height:4px;border-radius:4px;
+    background:repeating-linear-gradient(90deg,rgba(255,215,0,0) 0 56px,rgba(255,215,0,0.95) 56px 98px);
+  }
+  .lane-mark.lane-far{bottom:126px;opacity:0.4;animation:laneMove 3.2s linear infinite;}
+  .lane-mark.lane-mid{bottom:94px;opacity:0.72;animation:laneMove 2.4s linear infinite;}
+  .lane-mark.lane-near{bottom:62px;opacity:0.95;animation:laneMove 1.8s linear infinite;}
+  @keyframes laneMove{to{transform:translateX(46%);}}
 
-  /* Truck animation */
   .truck-anim{
-    position:absolute;bottom:110px;z-index:3;
-    animation:truckDrive 18s linear infinite;
+    position:absolute;left:calc(100% + 360px);z-index:3;
+    will-change:transform,left,opacity;
+    animation:truckDrive 17s linear infinite,truckBounce 1.4s ease-in-out infinite;
   }
-  .truck-anim:nth-child(1){animation-duration:16s;}
-  .truck-anim:nth-child(2){animation-duration:22s;animation-delay:-8s;bottom:130px;opacity:0.6;transform:scaleX(-1);}
+  .truck-anim.lane-1{bottom:116px;animation-duration:18s,1.8s;opacity:0.58;transform:scale(0.9);}
+  .truck-anim.lane-2{bottom:88px;animation-duration:14.8s,1.35s;animation-delay:-6.2s,-0.4s;opacity:0.86;transform:scale(1);}
+  .truck-anim.lane-3{bottom:54px;animation-duration:12.2s,1.05s;animation-delay:-2.8s,-0.2s;opacity:1;transform:scale(1.1);}
   @keyframes truckDrive{
-    0%{left:-300px;}
-    100%{left:calc(100% + 300px);}
+    0%{left:calc(100% + 360px);}
+    100%{left:-360px;}
   }
-  .truck-svg{width:180px;filter:drop-shadow(0 0 12px rgba(255,215,0,0.5));}
+  @keyframes truckBounce{
+    0%,100%{margin-bottom:0;}
+    50%{margin-bottom:3px;}
+  }
+  .truck-svg{width:190px;filter:drop-shadow(0 0 16px rgba(255,215,0,0.36));}
+  .truck-wheel{
+    transform-box:fill-box;
+    transform-origin:center;
+    animation:wheelSpin 0.55s linear infinite;
+  }
+  @keyframes wheelSpin{to{transform:rotate(360deg);}}
+  .truck-headlight{animation:headlightPulse 1.6s ease-in-out infinite;}
+  @keyframes headlightPulse{0%,100%{opacity:0.72;}50%{opacity:1;}}
 
   .hero-content{
     position:relative;z-index:5;text-align:center;
@@ -267,19 +309,6 @@
   }
   .btn-outline:hover{background:var(--yellow);color:#000;box-shadow:0 0 30px rgba(255,215,0,0.4);}
 
-  /* Video Upload Section in Hero */
-  .hero-video-upload{
-    position:absolute;top:80px;right:20px;z-index:10;
-    background:rgba(10,10,10,0.8);border:1px dashed rgba(255,215,0,0.3);
-    border-radius:8px;padding:12px 16px;text-align:center;
-    cursor:pointer;transition:all .3s;min-width:160px;display:none;
-  }
-  .hero-video-upload.show{display:block;}
-  .hero-video-upload:hover{border-color:var(--yellow);background:rgba(255,215,0,0.05);}
-  .hero-video-upload p{font-size:11px;color:var(--yellow);letter-spacing:1px;}
-  .hero-video-upload input{display:none;}
-
-  /* Stats bar */
   .hero-stats{
     position:absolute;bottom:0;left:0;width:100%;z-index:5;
     background:rgba(232,0,13,0.9);
@@ -326,7 +355,6 @@
     from{opacity:0;transform:translateY(30px);}
     to{opacity:1;transform:translateY(0);}
   }
-
   .reveal{opacity:0;transform:translateY(40px);transition:all .8s ease;}
   .reveal.visible{opacity:1;transform:translateY(0);}
 
@@ -345,7 +373,6 @@
     font-size:15px;color:rgba(245,245,245,0.6);line-height:1.9;
     margin-bottom:16px;
   }
-
   .about-highlights{
     display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:30px;
   }
@@ -439,7 +466,6 @@
     box-shadow:0 20px 60px rgba(232,0,13,0.15);
   }
   .service-card:hover::before{opacity:1;}
-
   .service-icon{
     width:56px;height:56px;
     background:linear-gradient(135deg,rgba(232,0,13,0.15),rgba(232,0,13,0.05));
@@ -469,14 +495,7 @@
   .service-card:hover .service-num{color:rgba(232,0,13,0.08);}
 
   /* ==================== FLEET ==================== */
-  #fleet{
-    background:var(--black2);
-    position:relative;
-  }
-  .fleet-intro{
-    max-width:1200px;margin:0 auto 60px;
-    display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:20px;
-  }
+  #fleet{background:var(--black2);position:relative;}
   .fleet-sizes{
     max-width:1200px;margin:0 auto;
     background:var(--dark);border:1px solid rgba(255,255,255,0.06);
@@ -507,18 +526,6 @@
     background:var(--red);margin-right:8px;
     box-shadow:0 0 6px var(--red);
   }
-  .fleet-bar{
-    height:4px;background:rgba(255,255,255,0.05);border-radius:2px;
-    margin-top:4px;overflow:hidden;
-  }
-  .fleet-bar-fill{
-    height:100%;background:linear-gradient(90deg,var(--red),var(--yellow));
-    border-radius:2px;transform-origin:left;
-    animation:barFill 1.5s ease .5s both;
-    transform:scaleX(0);
-  }
-  .fleet-bar-fill.visible{transform:scaleX(1);}
-  @keyframes barFill{to{transform:scaleX(1);}}
 
   .fleet-visual{
     max-width:1200px;margin:60px auto 0;
@@ -587,7 +594,7 @@
   }
   .timeline-content p{font-size:14px;color:rgba(245,245,245,0.55);line-height:1.8;}
 
-  /* ==================== STAFF / TEAM ==================== */
+  /* ==================== TEAM ==================== */
   #team{background:var(--black2);}
   .team-grid{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
@@ -629,14 +636,6 @@
     text-transform:uppercase;margin-bottom:10px;
   }
   .team-info p{font-size:13px;color:rgba(245,245,245,0.5);line-height:1.6;}
-  .team-social{display:flex;gap:8px;margin-top:14px;}
-  .team-social a{
-    width:30px;height:30px;border:1px solid rgba(255,255,255,0.1);
-    border-radius:4px;display:flex;align-items:center;justify-content:center;
-    font-size:12px;color:rgba(245,245,245,0.4);text-decoration:none;
-    transition:all .3s;
-  }
-  .team-social a:hover{border-color:var(--red);color:var(--red);}
 
   /* ==================== MISSION ==================== */
   #mission{
@@ -675,10 +674,7 @@
     letter-spacing:2px;margin-bottom:4px;
   }
   .value-text p{font-size:13px;color:rgba(245,245,245,0.5);}
-
-  .mission-visual{
-    display:flex;flex-direction:column;gap:20px;
-  }
+  .mission-visual{display:flex;flex-direction:column;gap:20px;}
   .mission-kpi{
     background:var(--dark);border:1px solid rgba(255,255,255,0.06);
     border-radius:8px;padding:28px;position:relative;overflow:hidden;
@@ -787,13 +783,88 @@
   }
   .footer-col ul li a:hover{color:var(--white);padding-left:4px;}
   .footer-col ul li a:hover::before{opacity:1;transform:translateX(0);}
-
   .footer-bottom{
     max-width:1200px;margin:30px auto 0;
     display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;
   }
   .footer-bottom p{font-size:12px;color:rgba(245,245,245,0.3);letter-spacing:1px;}
   .footer-bottom span{color:var(--red);}
+
+  /* ==================== MARQUEE ==================== */
+  .marquee-wrap{
+    background:linear-gradient(90deg,var(--red-dark),var(--red),var(--red-dark));
+    padding:16px 0;overflow:hidden;white-space:nowrap;
+    border-top:1px solid rgba(255,100,100,0.2);
+    border-bottom:1px solid rgba(255,100,100,0.2);
+  }
+  .marquee-track{
+    display:inline-flex;animation:marqueeScroll 30s linear infinite;
+  }
+  .marquee-item{
+    font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:3px;
+    color:rgba(255,255,255,0.7);padding:0 40px;text-transform:uppercase;
+    display:inline-flex;align-items:center;gap:16px;
+  }
+  .marquee-item::after{content:'◆';color:var(--yellow);font-size:8px;}
+  @keyframes marqueeScroll{
+    0%{transform:translateX(0);}
+    100%{transform:translateX(-50%);}
+  }
+
+  .nav-logo-img{
+    width:44px;height:44px;border-radius:6px;object-fit:contain;
+    background:#fff;padding:2px;display:none;
+    box-shadow:0 0 20px rgba(232,0,13,0.4);
+  }
+  .nav-logo-img.show{display:block;}
+  .nav-logo-icon.hide{display:none;}
+
+  body.font-cyber{font-family:'Orbitron',sans-serif!important;}
+  body.font-modern{font-family:'Inter',sans-serif!important;}
+  body.font-default{font-family:'Rajdhani',sans-serif!important;}
+
+  body.theme-light{
+    --black:#F0F0F0;--black2:#E8E8E8;--dark:#DDDDDD;--dark2:#CCCCCC;
+    --white:#111111;--white-dim:rgba(17,17,17,0.8);
+    --glass:rgba(0,0,0,0.04);--glass-border:rgba(0,0,0,0.12);
+    background:#F0F0F0;color:#111;
+  }
+  body.theme-navy{--black:#040818;--black2:#060c20;--dark:#0c1535;--dark2:#101a3a;background:#040818;}
+  body.theme-forest{
+    --black:#020f05;--black2:#041009;--dark:#071a0c;--dark2:#0c2213;
+    --red:#00c853;--red-dark:#007a32;--yellow:#aaff66;background:#020f05;
+  }
+
+  /* ==================== LOADING SCREEN ==================== */
+  #loader{
+    position:fixed;inset:0;background:#050505;z-index:99999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:24px;transition:opacity .5s,visibility .5s;
+  }
+  #loader.hidden{opacity:0;visibility:hidden;}
+  .loader-logo{font-family:'Orbitron',sans-serif;font-size:32px;font-weight:900;color:var(--white);letter-spacing:4px;}
+  .loader-logo span{color:var(--red);}
+  .loader-bar{width:200px;height:2px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+  .loader-bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--yellow));border-radius:2px;animation:loaderFill 1.8s ease forwards;}
+  @keyframes loaderFill{from{width:0%;}to{width:100%;}}
+  .loader-text{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:rgba(245,245,245,0.3);animation:blink 1.5s ease-in-out infinite;}
+
+  /* ==================== PARTICLES ==================== */
+  #particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .particle{position:absolute;border-radius:50%;pointer-events:none;animation:particleFloat linear infinite;opacity:0.3;}
+  @keyframes particleFloat{
+    0%{transform:translateY(100vh) translateX(0) scale(0);}
+    10%{opacity:0.3;}90%{opacity:0.1;}
+    100%{transform:translateY(-100px) translateX(var(--drift)) scale(1);}
+  }
+
+  /* ==================== GLITCH ==================== */
+  .glitch{position:relative;display:inline-block;}
+  .glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;}
+  .glitch::before{color:var(--red);animation:glitch1 3s infinite;clip-path:polygon(0 0,100% 0,100% 40%,0 40%);transform:translateX(-2px);}
+  .glitch::after{color:var(--yellow);animation:glitch2 3s infinite;clip-path:polygon(0 60%,100% 60%,100% 100%,0 100%);transform:translateX(2px);}
+  @keyframes glitch1{0%,94%,100%{transform:translateX(-2px);opacity:0;}95%{transform:translateX(-4px);opacity:1;}97%{transform:translateX(0);opacity:0.5;}}
+  @keyframes glitch2{0%,91%,100%{transform:translateX(2px);opacity:0;}92%{transform:translateX(4px);opacity:1;}94%{transform:translateX(0);opacity:0.5;}}
 
   /* ==================== ADMIN PANEL ==================== */
   #admin-overlay{
@@ -803,8 +874,7 @@
   }
   #admin-overlay.show{display:block;}
   .admin-login{
-    display:flex;align-items:center;justify-content:center;min-height:100vh;
-    padding:40px 20px;
+    display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;
   }
   .admin-login-box{
     background:var(--dark);border:1px solid rgba(232,0,13,0.3);
@@ -815,10 +885,7 @@
     font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;
     color:var(--white);text-align:center;margin-bottom:8px;letter-spacing:2px;
   }
-  .admin-login-box p{
-    text-align:center;font-size:12px;letter-spacing:2px;color:rgba(245,245,245,0.3);
-    margin-bottom:36px;
-  }
+  .admin-login-box p{text-align:center;font-size:12px;letter-spacing:2px;color:rgba(245,245,245,0.3);margin-bottom:36px;}
   .admin-panel{display:none;padding:30px 40px 60px;min-height:100vh;}
   .admin-panel.show{display:block;}
   .admin-topbar{
@@ -826,10 +893,7 @@
     padding:20px 0 30px;border-bottom:1px solid rgba(232,0,13,0.2);
     margin-bottom:36px;flex-wrap:wrap;gap:16px;
   }
-  .admin-topbar h1{
-    font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;
-    color:var(--white);
-  }
+  .admin-topbar h1{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--white);}
   .admin-topbar h1 span{color:var(--red);}
   .admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:30px;}
   .admin-tab{
@@ -837,23 +901,27 @@
     font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;
     letter-spacing:1px;text-transform:uppercase;
     border:1px solid rgba(255,255,255,0.1);color:rgba(245,245,245,0.5);
-    background:none;transition:all .3s;
+    background:none;transition:all .3s;position:relative;
   }
   .admin-tab.active{background:var(--red);border-color:var(--red);color:#fff;}
   .admin-tab:hover:not(.active){border-color:rgba(232,0,13,0.4);color:var(--white);}
+
+  /* Tab unread badge */
+  .admin-tab .tab-badge{
+    position:absolute;top:-6px;right:-6px;
+    background:var(--yellow);color:#000;
+    min-width:18px;height:18px;border-radius:9px;padding:0 4px;
+    font-size:10px;font-weight:700;font-family:'Orbitron',sans-serif;
+    display:none;align-items:center;justify-content:center;
+    border:2px solid #111;
+  }
+  .admin-tab .tab-badge.show{display:flex;}
+
   .admin-section{display:none;}
   .admin-section.active{display:block;}
-  .admin-section h3{
-    font-family:'Orbitron',sans-serif;font-size:14px;color:var(--yellow);
-    letter-spacing:2px;margin-bottom:24px;
-  }
-  .admin-field{
-    display:flex;flex-direction:column;gap:8px;margin-bottom:20px;
-  }
-  .admin-field label{
-    font-size:11px;letter-spacing:2px;text-transform:uppercase;
-    color:rgba(245,245,245,0.4);
-  }
+  .admin-section h3{font-family:'Orbitron',sans-serif;font-size:14px;color:var(--yellow);letter-spacing:2px;margin-bottom:24px;}
+  .admin-field{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+  .admin-field label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(245,245,245,0.4);}
   .admin-field input,.admin-field textarea,.admin-field select{
     background:rgba(255,255,255,0.04);
     border:1px solid rgba(255,255,255,0.1);
@@ -874,9 +942,7 @@
     margin-bottom:20px;padding-bottom:14px;
     border-bottom:1px solid rgba(255,255,255,0.06);
   }
-  .admin-card-header h4{
-    font-family:'Orbitron',sans-serif;font-size:12px;color:var(--white);letter-spacing:1px;
-  }
+  .admin-card-header h4{font-family:'Orbitron',sans-serif;font-size:12px;color:var(--white);letter-spacing:1px;}
   .btn-save{
     background:linear-gradient(135deg,var(--red),#8B0000);
     color:#fff;border:none;padding:12px 28px;border-radius:6px;cursor:pointer;
@@ -913,148 +979,167 @@
   }
   .admin-success.show{display:block;}
 
-  /* Image upload */
   .img-upload-wrap{
     border:2px dashed rgba(255,255,255,0.1);border-radius:8px;
     padding:30px;text-align:center;cursor:pointer;transition:all .3s;
     position:relative;background:rgba(255,255,255,0.02);
   }
   .img-upload-wrap:hover{border-color:var(--red);background:rgba(232,0,13,0.03);}
-  .img-upload-wrap input[type=file]{
-    position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;
-  }
+  .img-upload-wrap input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
   .img-upload-wrap p{font-size:13px;color:rgba(245,245,245,0.4);margin-top:8px;}
   .img-upload-wrap .icon{font-size:32px;display:block;}
   .img-preview{max-width:100%;max-height:200px;border-radius:6px;margin-top:12px;display:none;}
 
-  /* ==================== MARQUEE ==================== */
-  .marquee-wrap{
-    background:linear-gradient(90deg,var(--red-dark),var(--red),var(--red-dark));
-    padding:16px 0;overflow:hidden;white-space:nowrap;
-    border-top:1px solid rgba(255,100,100,0.2);
-    border-bottom:1px solid rgba(255,100,100,0.2);
+  /* ==================== MESSAGES INBOX ==================== */
+  .inbox-toolbar{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:12px;margin-bottom:24px;
   }
-  .marquee-track{
-    display:inline-flex;animation:marqueeScroll 30s linear infinite;
+  .inbox-stats{
+    display:flex;gap:16px;flex-wrap:wrap;
   }
-  .marquee-item{
-    font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:3px;
-    color:rgba(255,255,255,0.7);padding:0 40px;text-transform:uppercase;
-    display:inline-flex;align-items:center;gap:16px;
+  .inbox-stat{
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:8px;padding:12px 20px;text-align:center;
   }
-  .marquee-item::after{content:'◆';color:var(--yellow);font-size:8px;}
-  @keyframes marqueeScroll{
-    0%{transform:translateX(0);}
-    100%{transform:translateX(-50%);}
+  .inbox-stat .num{
+    font-family:'Orbitron',sans-serif;font-size:22px;font-weight:900;
+    color:var(--white);display:block;
+  }
+  .inbox-stat .lbl{font-size:10px;letter-spacing:2px;color:rgba(245,245,245,0.4);}
+  .inbox-stat.unread .num{color:var(--yellow);}
+
+  .inbox-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .inbox-filter{
+    padding:7px 16px;border-radius:20px;cursor:pointer;
+    font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;letter-spacing:1px;
+    border:1px solid rgba(255,255,255,0.1);color:rgba(245,245,245,0.5);
+    background:none;transition:all .3s;
+  }
+  .inbox-filter.active{background:var(--red);border-color:var(--red);color:#fff;}
+
+  .inbox-empty{
+    text-align:center;padding:80px 40px;
+    border:2px dashed rgba(255,255,255,0.06);border-radius:12px;
+  }
+  .inbox-empty .empty-icon{font-size:64px;display:block;margin-bottom:16px;opacity:0.3;}
+  .inbox-empty p{font-size:14px;color:rgba(245,245,245,0.3);letter-spacing:1px;}
+
+  .msg-list{display:flex;flex-direction:column;gap:12px;}
+
+  .msg-card{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.07);
+    border-radius:10px;overflow:hidden;
+    transition:all .3s;cursor:pointer;
+    position:relative;
+  }
+  .msg-card:hover{border-color:rgba(232,0,13,0.3);background:rgba(232,0,13,0.03);}
+  .msg-card.unread{border-left:3px solid var(--yellow);}
+  .msg-card.unread .msg-card-header{background:rgba(255,215,0,0.04);}
+  .msg-card.read{border-left:3px solid rgba(255,255,255,0.1);}
+
+  .msg-card-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 20px;gap:16px;flex-wrap:wrap;
+  }
+  .msg-card-left{display:flex;align-items:center;gap:14px;}
+  .msg-avatar{
+    width:42px;height:42px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,var(--red),var(--red-dark));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Orbitron',sans-serif;font-size:14px;font-weight:900;color:#fff;
+    box-shadow:0 0 12px rgba(232,0,13,0.3);
+  }
+  .msg-card.unread .msg-avatar{
+    background:linear-gradient(135deg,var(--yellow),#cc9900);color:#000;
+  }
+  .msg-sender-info h4{
+    font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;
+    color:var(--white);margin-bottom:3px;
+  }
+  .msg-sender-meta{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .msg-sender-meta span{font-size:11px;color:rgba(245,245,245,0.4);}
+  .msg-service-tag{
+    font-size:10px;background:rgba(232,0,13,0.15);border:1px solid rgba(232,0,13,0.3);
+    color:var(--red);padding:2px 8px;border-radius:12px;letter-spacing:1px;
+    white-space:nowrap;
   }
 
-  /* ==================== LOGO IMG ==================== */
-  .nav-logo-img{
-    width:44px;height:44px;border-radius:6px;object-fit:contain;
-    background:#fff;padding:2px;display:none;
-    box-shadow:0 0 20px rgba(232,0,13,0.4);
+  .msg-card-right{display:flex;align-items:center;gap:12px;}
+  .msg-time{font-size:11px;color:rgba(245,245,245,0.3);white-space:nowrap;}
+  .msg-unread-dot{
+    width:10px;height:10px;border-radius:50%;background:var(--yellow);
+    box-shadow:0 0 8px rgba(255,215,0,0.6);flex-shrink:0;
   }
-  .nav-logo-img.show{display:block;}
-  .nav-logo-icon.hide{display:none;}
-
-  /* ==================== FONT THEMES ==================== */
-  body.font-cyber{font-family:'Orbitron',sans-serif!important;}
-  body.font-modern{font-family:'Inter',sans-serif!important;}
-  body.font-default{font-family:'Rajdhani',sans-serif!important;}
-
-  /* ==================== SITE THEMES ==================== */
-  body.theme-light{
-    --black:#F0F0F0;--black2:#E8E8E8;--dark:#DDDDDD;--dark2:#CCCCCC;
-    --white:#111111;--white-dim:rgba(17,17,17,0.8);
-    --glass:rgba(0,0,0,0.04);--glass-border:rgba(0,0,0,0.12);
-    background:#F0F0F0;color:#111;
-  }
-  body.theme-light .service-card,body.theme-light .fleet-type-card,
-  body.theme-light .team-card,body.theme-light .mission-kpi,
-  body.theme-light .contact-form,body.theme-light .contact-item,
-  body.theme-light .highlight-card,body.theme-light .value-item{
-    background:#fff;border-color:rgba(0,0,0,0.1);
-  }
-  body.theme-navy{
-    --black:#040818;--black2:#060c20;--dark:#0c1535;--dark2:#101a3a;
-    background:#040818;
-  }
-  body.theme-forest{
-    --black:#020f05;--black2:#041009;--dark:#071a0c;--dark2:#0c2213;
-    --red:#00c853;--red-dark:#007a32;--yellow:#aaff66;
-    background:#020f05;
+  .msg-status-read{
+    font-size:10px;color:rgba(0,200,100,0.6);letter-spacing:1px;
+    font-family:'Orbitron',sans-serif;
   }
 
-  /* ==================== LOADING SCREEN ==================== */
-  #loader{
-    position:fixed;inset:0;background:#050505;z-index:99999;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:24px;transition:opacity .5s,visibility .5s;
+  /* Expanded message body */
+  .msg-body{
+    display:none;padding:0 20px 20px;
+    border-top:1px solid rgba(255,255,255,0.05);
+    margin-top:0;
   }
-  #loader.hidden{opacity:0;visibility:hidden;}
-  .loader-logo{
-    font-family:'Orbitron',sans-serif;font-size:32px;font-weight:900;
-    color:var(--white);letter-spacing:4px;
+  .msg-body.open{display:block;}
+  .msg-body-content{
+    background:rgba(255,255,255,0.02);border-radius:8px;
+    padding:18px 20px;margin:16px 0;
+    font-size:14px;color:rgba(245,245,245,0.7);line-height:1.8;
+    border-left:3px solid rgba(232,0,13,0.3);
+    white-space:pre-wrap;
   }
-  .loader-logo span{color:var(--red);}
-  .loader-bar{
-    width:200px;height:2px;background:rgba(255,255,255,0.1);border-radius:2px;
-    overflow:hidden;
+  .msg-detail-row{
+    display:flex;gap:8px;align-items:baseline;margin-bottom:8px;
+    font-size:13px;
   }
-  .loader-bar-fill{
-    height:100%;background:linear-gradient(90deg,var(--red),var(--yellow));
-    border-radius:2px;animation:loaderFill 1.8s ease forwards;
+  .msg-detail-row .lbl{
+    font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;
+    color:rgba(245,245,245,0.3);min-width:80px;
   }
-  @keyframes loaderFill{from{width:0%;}to{width:100%;}}
-  .loader-text{
-    font-size:10px;letter-spacing:4px;text-transform:uppercase;
-    color:rgba(245,245,245,0.3);animation:blink 1.5s ease-in-out infinite;
-  }
+  .msg-detail-row .val{color:rgba(245,245,245,0.7);}
+  .msg-detail-row .val a{color:var(--yellow);text-decoration:none;}
+  .msg-detail-row .val a:hover{color:var(--red);}
 
-  /* ==================== PARTICLES ==================== */
-  #particles{
-    position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
+  .msg-actions{
+    display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:16px;
+    border-top:1px solid rgba(255,255,255,0.05);
   }
-  .particle{
-    position:absolute;border-radius:50%;pointer-events:none;
-    animation:particleFloat linear infinite;
-    opacity:0.3;
+  .msg-action-btn{
+    padding:8px 18px;border-radius:6px;cursor:pointer;
+    font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;letter-spacing:1px;
+    border:none;transition:all .3s;text-transform:uppercase;
   }
-  @keyframes particleFloat{
-    0%{transform:translateY(100vh) translateX(0) scale(0);}
-    10%{opacity:0.3;}
-    90%{opacity:0.1;}
-    100%{transform:translateY(-100px) translateX(var(--drift)) scale(1);}
+  .msg-action-btn.reply{
+    background:linear-gradient(135deg,var(--red),var(--red-dark));color:#fff;
+    box-shadow:0 0 12px rgba(232,0,13,0.3);
   }
+  .msg-action-btn.reply:hover{box-shadow:0 0 24px rgba(232,0,13,0.6);}
+  .msg-action-btn.mark-read{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);color:var(--yellow);}
+  .msg-action-btn.mark-read:hover{background:rgba(255,215,0,0.2);}
+  .msg-action-btn.delete{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(245,245,245,0.4);}
+  .msg-action-btn.delete:hover{background:rgba(200,50,50,0.15);border-color:rgba(200,50,50,0.3);color:#ff6666;}
 
-  /* ==================== GLITCH EFFECT ==================== */
-  .glitch{
-    position:relative;display:inline-block;
+  /* Reply box */
+  .reply-box{
+    margin-top:16px;display:none;
   }
-  .glitch::before,.glitch::after{
-    content:attr(data-text);position:absolute;
-    top:0;left:0;width:100%;height:100%;
+  .reply-box.open{display:block;}
+  .reply-box textarea{
+    width:100%;background:rgba(255,255,255,0.04);
+    border:1px solid rgba(232,0,13,0.3);color:var(--white);
+    padding:14px 16px;border-radius:8px;
+    font-family:'Rajdhani',sans-serif;font-size:14px;
+    resize:vertical;min-height:100px;outline:none;
+    transition:border-color .3s;
   }
-  .glitch::before{
-    color:var(--red);animation:glitch1 3s infinite;
-    clip-path:polygon(0 0,100% 0,100% 40%,0 40%);
-    transform:translateX(-2px);
-  }
-  .glitch::after{
-    color:var(--yellow);animation:glitch2 3s infinite;
-    clip-path:polygon(0 60%,100% 60%,100% 100%,0 100%);
-    transform:translateX(2px);
-  }
-  @keyframes glitch1{
-    0%,94%,100%{transform:translateX(-2px);opacity:0;}
-    95%{transform:translateX(-4px);opacity:1;}
-    97%{transform:translateX(0);opacity:0.5;}
-  }
-  @keyframes glitch2{
-    0%,91%,100%{transform:translateX(2px);opacity:0;}
-    92%{transform:translateX(4px);opacity:1;}
-    94%{transform:translateX(0);opacity:0.5;}
-  }
+  .reply-box textarea:focus{border-color:var(--red);box-shadow:0 0 12px rgba(232,0,13,0.15);}
+  .reply-box-actions{display:flex;gap:10px;margin-top:10px;align-items:center;}
+  .reply-note{font-size:11px;color:rgba(245,245,245,0.25);letter-spacing:1px;}
 
   /* ==================== RESPONSIVE ==================== */
   @media(max-width:1024px){
@@ -1081,9 +1166,7 @@
     .timeline::before{left:20px;}
     .timeline-item{grid-template-columns:30px 1fr;}
     .timeline-item:nth-child(odd) .timeline-content,
-    .timeline-item:nth-child(even) .timeline-content{
-      grid-column:2;margin:0 0 0 20px;
-    }
+    .timeline-item:nth-child(even) .timeline-content{grid-column:2;margin:0 0 0 20px;}
     .timeline-item:nth-child(odd) .timeline-dot,
     .timeline-item:nth-child(even) .timeline-dot{grid-column:1;}
     .timeline-empty{display:none!important;}
@@ -1092,11 +1175,13 @@
     .admin-grid-2,.admin-grid-3{grid-template-columns:1fr;}
     .form-row{grid-template-columns:1fr;}
     .fleet-visual{grid-template-columns:repeat(2,1fr);}
+    .admin-panel{padding:20px;}
   }
   @media(max-width:480px){
     .fleet-visual{grid-template-columns:1fr;}
     .about-highlights{grid-template-columns:1fr;}
     .stat-item{max-width:100%;}
+    .msg-card-header{flex-direction:column;align-items:flex-start;}
   }
 </style>
 </head>
@@ -1137,7 +1222,10 @@
     <a href="#contact" class="nav-cta">Get Quote</a>
   </div>
   <div style="display:flex;align-items:center;gap:8px;">
-    <button class="nav-admin-btn" onclick="openAdmin()">⚙ Admin</button>
+    <button class="nav-admin-btn" onclick="openAdmin()">
+      ⚙ Admin
+      <span class="msg-badge" id="nav-msg-badge">0</span>
+    </button>
     <div class="hamburger" id="hamburger" onclick="toggleNav()">
       <span></span><span></span><span></span>
     </div>
@@ -1146,39 +1234,58 @@
 
 <!-- ==================== HERO ==================== -->
 <section id="hero">
-  <video id="hero-video-bg" autoplay muted loop playsinline></video>
+  <video id="hero-video-bg" autoplay muted loop playsinline>
+    <source src="" type="video/mp4">
+  </video>
   <div class="hero-overlay"></div>
   <div class="hero-grid-overlay"></div>
 
-  <!-- Road -->
   <div class="hero-road">
-    <div class="road-line"></div>
-    <div class="road-line road-line2"></div>
-    <!-- Truck SVG 1 -->
-    <div class="truck-anim">
-      <svg class="truck-svg" viewBox="0 0 200 70" xmlns="http://www.w3.org/2000/svg">
-        <rect x="50" y="20" width="140" height="35" rx="4" fill="#1a1a1a" stroke="#E8000D" stroke-width="1"/>
-        <rect x="10" y="25" width="48" height="30" rx="4" fill="#111" stroke="#FFD700" stroke-width="1"/>
-        <rect x="14" y="28" width="36" height="18" rx="2" fill="#1a3a4a" opacity="0.7"/>
-        <circle cx="35" cy="58" r="9" fill="#222" stroke="#E8000D" stroke-width="2"/>
-        <circle cx="35" cy="58" r="4" fill="#E8000D"/>
-        <circle cx="155" cy="58" r="9" fill="#222" stroke="#E8000D" stroke-width="2"/>
-        <circle cx="155" cy="58" r="4" fill="#E8000D"/>
-        <circle cx="175" cy="58" r="9" fill="#222" stroke="#E8000D" stroke-width="2"/>
-        <circle cx="175" cy="58" r="4" fill="#E8000D"/>
-        <rect x="185" y="38" width="8" height="6" rx="1" fill="#FFD700" opacity="0.9"/>
-        <text x="80" y="42" font-size="7" fill="#FFD700" font-family="Arial" letter-spacing="1">AL-FAIZ</text>
+    <div class="road-glow"></div>
+    <div class="road-surface"></div>
+    <div class="lane-mark lane-far"></div>
+    <div class="lane-mark lane-mid"></div>
+    <div class="lane-mark lane-near"></div>
+
+    <div class="truck-anim lane-1">
+      <svg class="truck-svg" viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="30" cy="44" rx="24" ry="14" fill="rgba(255,215,0,0.25)" class="truck-headlight"/>
+        <rect x="18" y="26" width="54" height="30" rx="5" fill="#111" stroke="#FFD700" stroke-width="1.2"/>
+        <rect x="26" y="30" width="40" height="14" rx="3" fill="#1f4557" opacity="0.8"/>
+        <rect x="20" y="36" width="10" height="6" rx="2" fill="#FFD700"/>
+        <rect x="62" y="22" width="140" height="32" rx="6" fill="#171717" stroke="#E8000D" stroke-width="1.4"/>
+        <text x="96" y="42" font-size="7" fill="#FFD700" font-family="Arial" letter-spacing="1">AL-FAIZ</text>
+        <g class="truck-wheel"><circle cx="44" cy="61" r="10" fill="#0f0f0f" stroke="#777" stroke-width="2"/><circle cx="44" cy="61" r="4" fill="#d8d8d8"/></g>
+        <g class="truck-wheel"><circle cx="156" cy="61" r="10" fill="#0f0f0f" stroke="#777" stroke-width="2"/><circle cx="156" cy="61" r="4" fill="#d8d8d8"/></g>
+        <g class="truck-wheel"><circle cx="180" cy="61" r="10" fill="#0f0f0f" stroke="#777" stroke-width="2"/><circle cx="180" cy="61" r="4" fill="#d8d8d8"/></g>
       </svg>
     </div>
-    <!-- Truck SVG 2 (reversed, faint) -->
-    <div class="truck-anim" style="animation-delay:-4s;bottom:90px;">
-      <svg class="truck-svg" viewBox="0 0 200 70" xmlns="http://www.w3.org/2000/svg" style="opacity:0.4;transform:scaleX(-1)">
-        <rect x="50" y="20" width="140" height="35" rx="4" fill="#1a1a1a" stroke="#555" stroke-width="1"/>
-        <rect x="10" y="25" width="48" height="30" rx="4" fill="#111" stroke="#555" stroke-width="1"/>
-        <circle cx="35" cy="58" r="9" fill="#222" stroke="#555" stroke-width="2"/>
-        <circle cx="35" cy="58" r="4" fill="#333"/>
-        <circle cx="155" cy="58" r="9" fill="#222" stroke="#555" stroke-width="2"/>
-        <circle cx="155" cy="58" r="4" fill="#333"/>
+
+    <div class="truck-anim lane-2">
+      <svg class="truck-svg" viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="30" cy="44" rx="24" ry="14" fill="rgba(255,215,0,0.33)" class="truck-headlight"/>
+        <rect x="18" y="26" width="54" height="30" rx="5" fill="#111" stroke="#FFD700" stroke-width="1.3"/>
+        <rect x="26" y="30" width="40" height="14" rx="3" fill="#2a5f78" opacity="0.82"/>
+        <rect x="20" y="36" width="10" height="6" rx="2" fill="#FFD700"/>
+        <rect x="62" y="22" width="140" height="32" rx="6" fill="#1a1a1a" stroke="#E8000D" stroke-width="1.5"/>
+        <text x="96" y="42" font-size="7" fill="#FFD700" font-family="Arial" letter-spacing="1">AL-FAIZ</text>
+        <g class="truck-wheel"><circle cx="44" cy="61" r="10" fill="#111" stroke="#8d8d8d" stroke-width="2"/><circle cx="44" cy="61" r="4" fill="#f1f1f1"/></g>
+        <g class="truck-wheel"><circle cx="156" cy="61" r="10" fill="#111" stroke="#8d8d8d" stroke-width="2"/><circle cx="156" cy="61" r="4" fill="#f1f1f1"/></g>
+        <g class="truck-wheel"><circle cx="180" cy="61" r="10" fill="#111" stroke="#8d8d8d" stroke-width="2"/><circle cx="180" cy="61" r="4" fill="#f1f1f1"/></g>
+      </svg>
+    </div>
+
+    <div class="truck-anim lane-3">
+      <svg class="truck-svg" viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="30" cy="44" rx="24" ry="14" fill="rgba(255,215,0,0.45)" class="truck-headlight"/>
+        <rect x="18" y="26" width="54" height="30" rx="5" fill="#0f0f0f" stroke="#FFD700" stroke-width="1.4"/>
+        <rect x="26" y="30" width="40" height="14" rx="3" fill="#2f6781" opacity="0.84"/>
+        <rect x="20" y="36" width="10" height="6" rx="2" fill="#FFEC3D"/>
+        <rect x="62" y="22" width="140" height="32" rx="6" fill="#1d1d1d" stroke="#FF2A33" stroke-width="1.6"/>
+        <text x="96" y="42" font-size="7" fill="#FFEC3D" font-family="Arial" letter-spacing="1">AL-FAIZ</text>
+        <g class="truck-wheel"><circle cx="44" cy="61" r="10" fill="#0d0d0d" stroke="#a0a0a0" stroke-width="2"/><circle cx="44" cy="61" r="4" fill="#fff"/></g>
+        <g class="truck-wheel"><circle cx="156" cy="61" r="10" fill="#0d0d0d" stroke="#a0a0a0" stroke-width="2"/><circle cx="156" cy="61" r="4" fill="#fff"/></g>
+        <g class="truck-wheel"><circle cx="180" cy="61" r="10" fill="#0d0d0d" stroke="#a0a0a0" stroke-width="2"/><circle cx="180" cy="61" r="4" fill="#fff"/></g>
       </svg>
     </div>
   </div>
@@ -1198,22 +1305,10 @@
   </div>
 
   <div class="hero-stats">
-    <div class="stat-item">
-      <span class="stat-num" id="stat1">50+</span>
-      <span class="stat-label">Fleet Vehicles</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-num" id="stat2">24/7</span>
-      <span class="stat-label">Operations</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-num" id="stat3">100%</span>
-      <span class="stat-label">Cargo Coverage</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-num" id="stat4">2</span>
-      <span class="stat-label">Major Offices</span>
-    </div>
+    <div class="stat-item"><span class="stat-num" id="stat1">50+</span><span class="stat-label">Fleet Vehicles</span></div>
+    <div class="stat-item"><span class="stat-num" id="stat2">24/7</span><span class="stat-label">Operations</span></div>
+    <div class="stat-item"><span class="stat-num" id="stat3">100%</span><span class="stat-label">Cargo Coverage</span></div>
+    <div class="stat-item"><span class="stat-num" id="stat4">2</span><span class="stat-label">Major Offices</span></div>
   </div>
 </section>
 
@@ -1248,30 +1343,16 @@
       <p id="about-p2">Our success is due to our professional approach, competitive pricing and large network. With the quality of service rendered by us right from the beginning, we have become a trusted name in Pakistan's logistics industry.</p>
       <p id="about-p3">We pride ourselves on our high standards of ethical business conduct and exceptional service levels. Our objective is quality — to improve service levels and always be prepared to initiate change to meet our clients' requirements.</p>
       <div class="about-highlights">
-        <div class="highlight-card">
-          <h4>🏢 In-House Tech Team</h4>
-          <p>Technical support for all vehicles 24 hours a day, 7 days a week.</p>
-        </div>
-        <div class="highlight-card">
-          <h4>🛡️ Fully Maintained</h4>
-          <p>All equipment serviced and maintained by our expert technical staff.</p>
-        </div>
-        <div class="highlight-card">
-          <h4>🌐 Nationwide</h4>
-          <p>Country-wide coverage with deliveries to all major destinations.</p>
-        </div>
-        <div class="highlight-card">
-          <h4>📞 24/7 Support</h4>
-          <p>Round-the-clock communication with staff for all cargo needs.</p>
-        </div>
+        <div class="highlight-card"><h4>🏢 In-House Tech Team</h4><p>Technical support for all vehicles 24 hours a day, 7 days a week.</p></div>
+        <div class="highlight-card"><h4>🛡️ Fully Maintained</h4><p>All equipment serviced and maintained by our expert technical staff.</p></div>
+        <div class="highlight-card"><h4>🌐 Nationwide</h4><p>Country-wide coverage with deliveries to all major destinations.</p></div>
+        <div class="highlight-card"><h4>📞 24/7 Support</h4><p>Round-the-clock communication with staff for all cargo needs.</p></div>
       </div>
     </div>
     <div class="about-visual reveal">
       <div class="about-img-frame" id="about-img-frame">
-        <div class="about-corner tl"></div>
-        <div class="about-corner tr"></div>
-        <div class="about-corner bl"></div>
-        <div class="about-corner br"></div>
+        <div class="about-corner tl"></div><div class="about-corner tr"></div>
+        <div class="about-corner bl"></div><div class="about-corner br"></div>
         <img id="about-img" src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80" alt="AL-FAIZ Fleet">
         <div class="about-img-overlay"></div>
       </div>
@@ -1292,42 +1373,12 @@
     <p class="section-sub">Comprehensive transport and cargo solutions designed to meet every business need across Pakistan.</p>
   </div>
   <div class="services-grid" id="services-grid">
-    <div class="service-card reveal">
-      <span class="service-num">01</span>
-      <div class="service-icon">🚛</div>
-      <h3>Containerised Cargo Handling</h3>
-      <p>Complete handling of both hazardous and non-hazardous goods and chemicals in fully certified containers with strict safety protocols.</p>
-    </div>
-    <div class="service-card reveal">
-      <span class="service-num">02</span>
-      <div class="service-icon">📦</div>
-      <h3>Break-Bulk Cargo Handling</h3>
-      <p>Expert management of break-bulk cargo with professional loading, transit and unloading services across all major routes.</p>
-    </div>
-    <div class="service-card reveal">
-      <span class="service-num">03</span>
-      <div class="service-icon">⚓</div>
-      <h3>Import & Export Containers</h3>
-      <p>Special rates application to storages, lifts and cross hauls on import and export containers nationwide.</p>
-    </div>
-    <div class="service-card reveal">
-      <span class="service-num">04</span>
-      <div class="service-icon">⚗️</div>
-      <h3>Chemical & Hazmat Transport</h3>
-      <p>Certified transportation of hazardous materials and chemicals with trained personnel and fully equipped safety vehicles.</p>
-    </div>
-    <div class="service-card reveal">
-      <span class="service-num">05</span>
-      <div class="service-icon">📡</div>
-      <h3>24/7 Communication</h3>
-      <p>Round-the-clock communication with dedicated staff ensuring real-time tracking and updates on all your shipments.</p>
-    </div>
-    <div class="service-card reveal">
-      <span class="service-num">06</span>
-      <div class="service-icon">🏗️</div>
-      <h3>Storage & Lifts</h3>
-      <p>Special rate storage solutions with crane lifts and warehousing support at strategic locations across Pakistan.</p>
-    </div>
+    <div class="service-card reveal"><span class="service-num">01</span><div class="service-icon">🚛</div><h3>Containerised Cargo Handling</h3><p>Complete handling of both hazardous and non-hazardous goods and chemicals in fully certified containers with strict safety protocols.</p></div>
+    <div class="service-card reveal"><span class="service-num">02</span><div class="service-icon">📦</div><h3>Break-Bulk Cargo Handling</h3><p>Expert management of break-bulk cargo with professional loading, transit and unloading services across all major routes.</p></div>
+    <div class="service-card reveal"><span class="service-num">03</span><div class="service-icon">⚓</div><h3>Import & Export Containers</h3><p>Special rates application to storages, lifts and cross hauls on import and export containers nationwide.</p></div>
+    <div class="service-card reveal"><span class="service-num">04</span><div class="service-icon">⚗️</div><h3>Chemical & Hazmat Transport</h3><p>Certified transportation of hazardous materials and chemicals with trained personnel and fully equipped safety vehicles.</p></div>
+    <div class="service-card reveal"><span class="service-num">05</span><div class="service-icon">📡</div><h3>24/7 Communication</h3><p>Round-the-clock communication with dedicated staff ensuring real-time tracking and updates on all your shipments.</p></div>
+    <div class="service-card reveal"><span class="service-num">06</span><div class="service-icon">🏗️</div><h3>Storage & Lifts</h3><p>Special rate storage solutions with crane lifts and warehousing support at strategic locations across Pakistan.</p></div>
   </div>
 </section>
 
@@ -1339,65 +1390,23 @@
     <div class="section-divider"></div>
     <p class="section-sub">A powerful fleet of vehicles ready to handle any cargo requirement across Pakistan.</p>
   </div>
-
   <div class="fleet-sizes reveal">
     <div class="fleet-header-row">
-      <span>Vehicle Type</span>
-      <span>Size</span>
-      <span>Capacity</span>
-      <span>Status</span>
+      <span>Vehicle Type</span><span>Size</span><span>Capacity</span><span>Status</span>
     </div>
-    <div class="fleet-row">
-      <span class="fl-name"><span class="fleet-dot"></span>Standard Flat Bed</span>
-      <span>17 Ft</span><span>10 Ton</span><span>🟢 Active</span>
-    </div>
-    <div class="fleet-row">
-      <span class="fl-name"><span class="fleet-dot"></span>Medium Carrier</span>
-      <span>20 Ft</span><span>15 Ton</span><span>🟢 Active</span>
-    </div>
-    <div class="fleet-row">
-      <span class="fl-name"><span class="fleet-dot"></span>Large Carrier</span>
-      <span>30 Ft</span><span>22 Ton</span><span>🟢 Active</span>
-    </div>
-    <div class="fleet-row">
-      <span class="fl-name"><span class="fleet-dot"></span>Heavy Container</span>
-      <span>40 Ft</span><span>30 Ton</span><span>🟢 Active</span>
-    </div>
-    <div class="fleet-row">
-      <span class="fl-name"><span class="fleet-dot"></span>Extra Heavy</span>
-      <span>45 Ft</span><span>35 Ton</span><span>🟢 Active</span>
-    </div>
-    <div class="fleet-row">
-      <span class="fl-name"><span class="fleet-dot"></span>Super Carrier</span>
-      <span>50 Ft</span><span>40 Ton</span><span>🟢 Active</span>
-    </div>
-    <div class="fleet-row" style="border-bottom:none;">
-      <span class="fl-name"><span class="fleet-dot" style="background:var(--yellow);box-shadow:0 0 6px var(--yellow);"></span>Open & Containerised</span>
-      <span>All Sizes</span><span>Variable</span><span>🟢 Active</span>
-    </div>
+    <div class="fleet-row"><span class="fl-name"><span class="fleet-dot"></span>Standard Flat Bed</span><span>17 Ft</span><span>10 Ton</span><span>🟢 Active</span></div>
+    <div class="fleet-row"><span class="fl-name"><span class="fleet-dot"></span>Medium Carrier</span><span>20 Ft</span><span>15 Ton</span><span>🟢 Active</span></div>
+    <div class="fleet-row"><span class="fl-name"><span class="fleet-dot"></span>Large Carrier</span><span>30 Ft</span><span>22 Ton</span><span>🟢 Active</span></div>
+    <div class="fleet-row"><span class="fl-name"><span class="fleet-dot"></span>Heavy Container</span><span>40 Ft</span><span>30 Ton</span><span>🟢 Active</span></div>
+    <div class="fleet-row"><span class="fl-name"><span class="fleet-dot"></span>Extra Heavy</span><span>45 Ft</span><span>35 Ton</span><span>🟢 Active</span></div>
+    <div class="fleet-row"><span class="fl-name"><span class="fleet-dot"></span>Super Carrier</span><span>50 Ft</span><span>40 Ton</span><span>🟢 Active</span></div>
+    <div class="fleet-row" style="border-bottom:none;"><span class="fl-name"><span class="fleet-dot" style="background:var(--yellow);box-shadow:0 0 6px var(--yellow);"></span>Open & Containerised</span><span>All Sizes</span><span>Variable</span><span>🟢 Active</span></div>
   </div>
-
   <div class="fleet-visual reveal">
-    <div class="fleet-type-card">
-      <span class="fleet-type-icon">🚛</span>
-      <h4>Container Trucks</h4>
-      <p>40ft & 50ft heavy container haulers for inter-city runs</p>
-    </div>
-    <div class="fleet-type-card">
-      <span class="fleet-type-icon">🚚</span>
-      <h4>Flatbed Carriers</h4>
-      <p>17ft to 30ft flatbeds for open cargo and machinery</p>
-    </div>
-    <div class="fleet-type-card">
-      <span class="fleet-type-icon">🏗️</span>
-      <h4>Open Body Trucks</h4>
-      <p>Heavy-duty open vehicles for bulk material transport</p>
-    </div>
-    <div class="fleet-type-card">
-      <span class="fleet-type-icon">⚗️</span>
-      <h4>Chemical Tankers</h4>
-      <p>Certified hazmat transport for chemicals & liquids</p>
-    </div>
+    <div class="fleet-type-card"><span class="fleet-type-icon">🚛</span><h4>Container Trucks</h4><p>40ft & 50ft heavy container haulers for inter-city runs</p></div>
+    <div class="fleet-type-card"><span class="fleet-type-icon">🚚</span><h4>Flatbed Carriers</h4><p>17ft to 30ft flatbeds for open cargo and machinery</p></div>
+    <div class="fleet-type-card"><span class="fleet-type-icon">🏗️</span><h4>Open Body Trucks</h4><p>Heavy-duty open vehicles for bulk material transport</p></div>
+    <div class="fleet-type-card"><span class="fleet-type-icon">⚗️</span><h4>Chemical Tankers</h4><p>Certified hazmat transport for chemicals & liquids</p></div>
   </div>
 </section>
 
@@ -1410,54 +1419,30 @@
   </div>
   <div class="timeline" id="timeline-container">
     <div class="timeline-item">
-      <div class="timeline-content reveal">
-        <div class="timeline-year">THE BEGINNING</div>
-        <h3>Foundation of AL-FAIZ</h3>
-        <p>AL-FAIZ Enterprises was established with a vision to provide reliable transportation solutions across Pakistan, starting with a small but dedicated fleet of vehicles.</p>
-      </div>
-      <div class="timeline-dot">✦</div>
-      <div class="timeline-empty"></div>
+      <div class="timeline-content reveal"><div class="timeline-year">THE BEGINNING</div><h3>Foundation of AL-FAIZ</h3><p>AL-FAIZ Enterprises was established with a vision to provide reliable transportation solutions across Pakistan, starting with a small but dedicated fleet of vehicles.</p></div>
+      <div class="timeline-dot">✦</div><div class="timeline-empty"></div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-empty"></div>
-      <div class="timeline-dot">✦</div>
-      <div class="timeline-content reveal">
-        <div class="timeline-year">EXPANSION</div>
-        <h3>Lahore Operations Established</h3>
-        <p>Opened our main Lahore office at Plot 82, Sabzazar Truck Stand, Band Road — becoming a hub for transportation in Punjab region.</p>
-      </div>
+      <div class="timeline-empty"></div><div class="timeline-dot">✦</div>
+      <div class="timeline-content reveal"><div class="timeline-year">EXPANSION</div><h3>Lahore Operations Established</h3><p>Opened our main Lahore office at Plot 82, Sabzazar Truck Stand, Band Road — becoming a hub for transportation in Punjab region.</p></div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-content reveal">
-        <div class="timeline-year">GROWTH</div>
-        <h3>Karachi Office Launch</h3>
-        <p>Expanded southward with our Karachi office at Plot 459, Hawksbay Road New Truck Stand, enabling full port-to-destination cargo handling.</p>
-      </div>
-      <div class="timeline-dot">✦</div>
-      <div class="timeline-empty"></div>
+      <div class="timeline-content reveal"><div class="timeline-year">GROWTH</div><h3>Karachi Office Launch</h3><p>Expanded southward with our Karachi office at Plot 459, Hawksbay Road New Truck Stand, enabling full port-to-destination cargo handling.</p></div>
+      <div class="timeline-dot">✦</div><div class="timeline-empty"></div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-empty"></div>
-      <div class="timeline-dot">✦</div>
-      <div class="timeline-content reveal">
-        <div class="timeline-year">NATIONWIDE</div>
-        <h3>Country-Wide Network</h3>
-        <p>Achieved nationwide coverage with a diverse fleet from 17ft to 50ft vehicles, handling all types of cargo including hazardous chemicals and containerised freight.</p>
-      </div>
+      <div class="timeline-empty"></div><div class="timeline-dot">✦</div>
+      <div class="timeline-content reveal"><div class="timeline-year">NATIONWIDE</div><h3>Country-Wide Network</h3><p>Achieved nationwide coverage with a diverse fleet from 17ft to 50ft vehicles, handling all types of cargo including hazardous chemicals and containerised freight.</p></div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-content reveal">
-        <div class="timeline-year">TODAY</div>
-        <h3>Pakistan's Trusted Transport Partner</h3>
-        <p>Today AL-FAIZ Enterprises stands as a trusted name in Pakistani logistics — combining professional service, competitive pricing and 24/7 availability to deliver excellence.</p>
-      </div>
+      <div class="timeline-content reveal"><div class="timeline-year">TODAY</div><h3>Pakistan's Trusted Transport Partner</h3><p>Today AL-FAIZ Enterprises stands as a trusted name in Pakistani logistics — combining professional service, competitive pricing and 24/7 availability to deliver excellence.</p></div>
       <div class="timeline-dot" style="background:var(--yellow);box-shadow:0 0 20px rgba(255,215,0,0.5);">★</div>
       <div class="timeline-empty"></div>
     </div>
   </div>
 </section>
 
-<!-- ==================== TEAM / OUR PEOPLE ==================== -->
+<!-- ==================== TEAM ==================== -->
 <section id="team">
   <div class="section-header reveal">
     <span class="section-tag">The Force Behind</span>
@@ -1466,58 +1451,10 @@
     <p class="section-sub">The dedicated professionals who make AL-FAIZ Enterprises Pakistan's most reliable transport partner.</p>
   </div>
   <div class="team-grid" id="team-grid">
-    <div class="team-card reveal">
-      <div class="team-img-wrap">
-        <div class="team-img-placeholder">
-          <span class="team-avatar-icon">👤</span>
-        </div>
-        <div class="team-img-overlay"></div>
-      </div>
-      <div class="team-info">
-        <h3 id="team1-name">Mr. Mudassir</h3>
-        <div class="role" id="team1-role">Chief Executive Officer</div>
-        <p id="team1-desc">Visionary leader driving AL-FAIZ Enterprises with excellence, integrity, and a commitment to customer satisfaction.</p>
-      </div>
-    </div>
-    <div class="team-card reveal">
-      <div class="team-img-wrap">
-        <div class="team-img-placeholder">
-          <span class="team-avatar-icon">👤</span>
-        </div>
-        <div class="team-img-overlay"></div>
-      </div>
-      <div class="team-info">
-        <h3 id="team2-name">Operations Manager</h3>
-        <div class="role" id="team2-role">Head of Operations</div>
-        <p id="team2-desc">Overseeing all fleet deployments and ensuring on-time delivery of cargo across Pakistan's transport network.</p>
-      </div>
-    </div>
-    <div class="team-card reveal">
-      <div class="team-img-wrap">
-        <div class="team-img-placeholder">
-          <span class="team-avatar-icon">👤</span>
-        </div>
-        <div class="team-img-overlay"></div>
-      </div>
-      <div class="team-info">
-        <h3 id="team3-name">Fleet Supervisor</h3>
-        <div class="role" id="team3-role">Technical Fleet Lead</div>
-        <p id="team3-desc">Responsible for maintaining all vehicles to peak operational condition. 24/7 technical readiness specialist.</p>
-      </div>
-    </div>
-    <div class="team-card reveal">
-      <div class="team-img-wrap">
-        <div class="team-img-placeholder">
-          <span class="team-avatar-icon">👤</span>
-        </div>
-        <div class="team-img-overlay"></div>
-      </div>
-      <div class="team-info">
-        <h3 id="team4-name">Logistics Coordinator</h3>
-        <div class="role" id="team4-role">Karachi Office Head</div>
-        <p id="team4-desc">Managing Karachi port operations and all import/export container logistics with precision and professionalism.</p>
-      </div>
-    </div>
+    <div class="team-card reveal"><div class="team-img-wrap"><div class="team-img-placeholder"><span class="team-avatar-icon">👤</span></div><div class="team-img-overlay"></div></div><div class="team-info"><h3 id="team1-name">Mr. Mudassir</h3><div class="role" id="team1-role">Chief Executive Officer</div><p id="team1-desc">Visionary leader driving AL-FAIZ Enterprises with excellence, integrity, and a commitment to customer satisfaction.</p></div></div>
+    <div class="team-card reveal"><div class="team-img-wrap"><div class="team-img-placeholder"><span class="team-avatar-icon">👤</span></div><div class="team-img-overlay"></div></div><div class="team-info"><h3 id="team2-name">Operations Manager</h3><div class="role" id="team2-role">Head of Operations</div><p id="team2-desc">Overseeing all fleet deployments and ensuring on-time delivery of cargo across Pakistan's transport network.</p></div></div>
+    <div class="team-card reveal"><div class="team-img-wrap"><div class="team-img-placeholder"><span class="team-avatar-icon">👤</span></div><div class="team-img-overlay"></div></div><div class="team-info"><h3 id="team3-name">Fleet Supervisor</h3><div class="role" id="team3-role">Technical Fleet Lead</div><p id="team3-desc">Responsible for maintaining all vehicles to peak operational condition. 24/7 technical readiness specialist.</p></div></div>
+    <div class="team-card reveal"><div class="team-img-wrap"><div class="team-img-placeholder"><span class="team-avatar-icon">👤</span></div><div class="team-img-overlay"></div></div><div class="team-info"><h3 id="team4-name">Logistics Coordinator</h3><div class="role" id="team4-role">Karachi Office Head</div><p id="team4-desc">Managing Karachi port operations and all import/export container logistics with precision and professionalism.</p></div></div>
   </div>
 </section>
 
@@ -1529,42 +1466,15 @@
       <p id="mission-p1">AL-FAIZ Enterprises' objective is to exceed the expectations of our customers through total quality management. Our goal is to provide cost-effective alternatives.</p>
       <p id="mission-p2">To help our customers realize their goals, the company values its customers and believes in maintaining good relationships always. We commit to providing the highest level of quality and professional services to our clients.</p>
       <div class="mission-values">
-        <div class="value-item">
-          <div class="value-icon">🎯</div>
-          <div class="value-text">
-            <h4>Customer First</h4>
-            <p>Always responding to customer requirements with valuable, flexible and cost-effective quality services.</p>
-          </div>
-        </div>
-        <div class="value-item">
-          <div class="value-icon">🤝</div>
-          <div class="value-text">
-            <h4>Integrity</h4>
-            <p>High standards of ethical business conduct in every operation and transaction.</p>
-          </div>
-        </div>
-        <div class="value-item">
-          <div class="value-icon">⚡</div>
-          <div class="value-text">
-            <h4>Excellence</h4>
-            <p>Continuous improvement in service levels to stay ahead in Pakistan's transport industry.</p>
-          </div>
-        </div>
+        <div class="value-item"><div class="value-icon">🎯</div><div class="value-text"><h4>Customer First</h4><p>Always responding to customer requirements with valuable, flexible and cost-effective quality services.</p></div></div>
+        <div class="value-item"><div class="value-icon">🤝</div><div class="value-text"><h4>Integrity</h4><p>High standards of ethical business conduct in every operation and transaction.</p></div></div>
+        <div class="value-item"><div class="value-icon">⚡</div><div class="value-text"><h4>Excellence</h4><p>Continuous improvement in service levels to stay ahead in Pakistan's transport industry.</p></div></div>
       </div>
     </div>
     <div class="mission-visual reveal">
-      <div class="mission-kpi">
-        <div class="kpi-num">50<span>+</span></div>
-        <div class="kpi-label">Vehicles in Active Fleet</div>
-      </div>
-      <div class="mission-kpi">
-        <div class="kpi-num">24<span>/7</span></div>
-        <div class="kpi-label">Communication & Support</div>
-      </div>
-      <div class="mission-kpi">
-        <div class="kpi-num">100<span>%</span></div>
-        <div class="kpi-label">Client Satisfaction Goal</div>
-      </div>
+      <div class="mission-kpi"><div class="kpi-num">50<span>+</span></div><div class="kpi-label">Vehicles in Active Fleet</div></div>
+      <div class="mission-kpi"><div class="kpi-num">24<span>/7</span></div><div class="kpi-label">Communication & Support</div></div>
+      <div class="mission-kpi"><div class="kpi-num">100<span>%</span></div><div class="kpi-label">Client Satisfaction Goal</div></div>
     </div>
   </div>
 </section>
@@ -1581,57 +1491,23 @@
     <div class="contact-info reveal">
       <h3>Contact <span>Information</span></h3>
       <div class="contact-items">
-        <div class="contact-item">
-          <div class="contact-icon">📍</div>
-          <div class="contact-detail">
-            <h4>Lahore Office</h4>
-            <p id="lahore-addr">Plot num 82, Sabzazar Truck Stand, Band Road, Lahore</p>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">📍</div>
-          <div class="contact-detail">
-            <h4>Karachi Office</h4>
-            <p id="karachi-addr">Plot num 459, Street num 03, Gate num 03, New Truck Stand, Hawksbay Road, Karachi</p>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">📞</div>
-          <div class="contact-detail">
-            <h4>Phone Numbers</h4>
-            <a href="tel:03001808643" id="phone1">03001808643</a>
-            <a href="tel:04235970543" id="phone2" style="display:block;">04235970543</a>
-            <a href="tel:03012108643" id="phone3" style="display:block;">03012108643 (Karachi)</a>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">✉️</div>
-          <div class="contact-detail">
-            <h4>Email Address</h4>
-            <a href="mailto:alfaizenterprises13@gmail.com" id="email1">alfaizenterprises13@gmail.com</a>
-          </div>
-        </div>
+        <div class="contact-item"><div class="contact-icon">📍</div><div class="contact-detail"><h4>Lahore Office</h4><p id="lahore-addr">Plot num 82, Sabzazar Truck Stand, Band Road, Lahore</p></div></div>
+        <div class="contact-item"><div class="contact-icon">📍</div><div class="contact-detail"><h4>Karachi Office</h4><p id="karachi-addr">Plot num 459, Street num 03, Gate num 03, New Truck Stand, Hawksbay Road, Karachi</p></div></div>
+        <div class="contact-item"><div class="contact-icon">📞</div><div class="contact-detail"><h4>Phone Numbers</h4><a href="tel:03001808643" id="phone1">03001808643</a><a href="tel:04235970543" id="phone2" style="display:block;">04235970543</a><a href="tel:03012108643" id="phone3" style="display:block;">03012108643 (Karachi)</a></div></div>
+        <div class="contact-item"><div class="contact-icon">✉️</div><div class="contact-detail"><h4>Email Address</h4><a href="mailto:alfaizenterprises13@gmail.com" id="email1">alfaizenterprises13@gmail.com</a></div></div>
       </div>
     </div>
     <div class="contact-form reveal">
       <div class="form-title">📨 SEND US A MESSAGE</div>
       <div class="form-row">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" placeholder="Your name">
-        </div>
-        <div class="form-group">
-          <label>Phone Number</label>
-          <input type="tel" placeholder="+92 xxx xxxxxxx">
-        </div>
+        <div class="form-group"><label>Full Name</label><input type="text" id="cf-name" placeholder="Your name"></div>
+        <div class="form-group"><label>Phone Number</label><input type="tel" id="cf-phone" placeholder="+92 xxx xxxxxxx"></div>
       </div>
-      <div class="form-group">
-        <label>Company / Business</label>
-        <input type="text" placeholder="Your company name">
-      </div>
+      <div class="form-group"><label>Email Address</label><input type="email" id="cf-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Company / Business</label><input type="text" id="cf-company" placeholder="Your company name"></div>
       <div class="form-group">
         <label>Service Required</label>
-        <select>
+        <select id="cf-service">
           <option value="">Select a service</option>
           <option>Containerised Cargo Handling</option>
           <option>Break-Bulk Cargo</option>
@@ -1641,13 +1517,9 @@
           <option>Other</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Cargo Details / Message</label>
-        <textarea placeholder="Describe your cargo requirements, origin, destination..."></textarea>
-      </div>
-      <button class="btn-primary" onclick="submitForm(this)" style="width:100%;text-align:center;">
-        Send Enquiry →
-      </button>
+      <div class="form-group"><label>Cargo Details / Message</label><textarea id="cf-message" placeholder="Describe your cargo requirements, origin, destination..."></textarea></div>
+      <button class="btn-primary" onclick="submitContactForm(this)" style="width:100%;text-align:center;">Send Enquiry →</button>
+      <div id="form-sent-msg" style="display:none;margin-top:14px;background:rgba(0,200,100,0.1);border:1px solid rgba(0,200,100,0.3);color:#00c864;padding:14px 20px;border-radius:8px;font-size:13px;letter-spacing:1px;">✓ Your message has been sent! We will contact you soon.</div>
     </div>
   </div>
 </section>
@@ -1658,45 +1530,13 @@
     <div class="footer-brand">
       <a href="#hero" class="nav-logo" style="margin-bottom:16px;">
         <div class="nav-logo-icon">AF</div>
-        <div>
-          <div class="nav-logo-text">AL-<span>FAIZ</span></div>
-          <div class="nav-logo-sub">Enterprises</div>
-        </div>
+        <div><div class="nav-logo-text">AL-<span>FAIZ</span></div><div class="nav-logo-sub">Enterprises</div></div>
       </a>
       <p id="footer-desc">Pakistan's trusted transport partner — delivering cargo safely and on time across the country since our founding. Ethical, professional, reliable.</p>
     </div>
-    <div class="footer-col">
-      <h4>Quick Links</h4>
-      <ul>
-        <li><a href="#about">About Us</a></li>
-        <li><a href="#services">Our Services</a></li>
-        <li><a href="#fleet">Fleet Details</a></li>
-        <li><a href="#history">Our History</a></li>
-        <li><a href="#team">Our People</a></li>
-        <li><a href="#contact">Contact Us</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Services</h4>
-      <ul>
-        <li><a href="#services">Containerised Cargo</a></li>
-        <li><a href="#services">Break-Bulk Handling</a></li>
-        <li><a href="#services">Chemical Transport</a></li>
-        <li><a href="#services">Import/Export</a></li>
-        <li><a href="#services">Storage & Lifts</a></li>
-        <li><a href="#services">24/7 Support</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Contact</h4>
-      <ul>
-        <li><a href="tel:03001808643">📞 Lahore: 03001808643</a></li>
-        <li><a href="tel:03012108643">📞 Karachi: 03012108643</a></li>
-        <li><a href="mailto:alfaizenterprises13@gmail.com">✉️ Email Us</a></li>
-        <li><a href="#contact">📍 Lahore Office</a></li>
-        <li><a href="#contact">📍 Karachi Office</a></li>
-      </ul>
-    </div>
+    <div class="footer-col"><h4>Quick Links</h4><ul><li><a href="#about">About Us</a></li><li><a href="#services">Our Services</a></li><li><a href="#fleet">Fleet Details</a></li><li><a href="#history">Our History</a></li><li><a href="#team">Our People</a></li><li><a href="#contact">Contact Us</a></li></ul></div>
+    <div class="footer-col"><h4>Services</h4><ul><li><a href="#services">Containerised Cargo</a></li><li><a href="#services">Break-Bulk Handling</a></li><li><a href="#services">Chemical Transport</a></li><li><a href="#services">Import/Export</a></li><li><a href="#services">Storage & Lifts</a></li><li><a href="#services">24/7 Support</a></li></ul></div>
+    <div class="footer-col"><h4>Contact</h4><ul><li><a href="tel:03001808643">📞 Lahore: 03001808643</a></li><li><a href="tel:03012108643">📞 Karachi: 03012108643</a></li><li><a href="mailto:alfaizenterprises13@gmail.com">✉️ Email Us</a></li><li><a href="#contact">📍 Lahore Office</a></li><li><a href="#contact">📍 Karachi Office</a></li></ul></div>
   </div>
   <div class="footer-bottom">
     <p>© 2024 <span>AL-FAIZ Enterprises</span>. All Rights Reserved. Pakistan's Premier Transport Company.</p>
@@ -1732,34 +1572,29 @@
     </div>
 
     <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchTab('hero')">🏠 Hero</button>
-      <button class="admin-tab" onclick="switchTab('logo')">🖼 Logo</button>
-      <button class="admin-tab" onclick="switchTab('about')">📖 About</button>
-      <button class="admin-tab" onclick="switchTab('services')">⚙ Services</button>
-      <button class="admin-tab" onclick="switchTab('fleet')">🚛 Fleet</button>
-      <button class="admin-tab" onclick="switchTab('team')">👥 Team</button>
-      <button class="admin-tab" onclick="switchTab('contact')">📞 Contact</button>
-      <button class="admin-tab" onclick="switchTab('media')">🎬 Media</button>
-      <button class="admin-tab" onclick="switchTab('style')">🎨 Style</button>
+      <button class="admin-tab active" onclick="switchTab('hero',this)">🏠 Hero</button>
+      <button class="admin-tab" onclick="switchTab('logo',this)">🖼 Logo</button>
+      <button class="admin-tab" onclick="switchTab('about',this)">📖 About</button>
+      <button class="admin-tab" onclick="switchTab('services',this)">⚙ Services</button>
+      <button class="admin-tab" onclick="switchTab('fleet',this)">🚛 Fleet</button>
+      <button class="admin-tab" onclick="switchTab('team',this)">👥 Team</button>
+      <button class="admin-tab" onclick="switchTab('contact',this)">📞 Contact</button>
+      <button class="admin-tab" onclick="switchTab('media',this)">🎬 Media</button>
+      <button class="admin-tab" onclick="switchTab('messages',this)" id="tab-btn-messages">
+        📨 Messages
+        <span class="tab-badge" id="tab-msg-badge">0</span>
+      </button>
+      <button class="admin-tab" onclick="switchTab('style',this)">🎨 Style</button>
     </div>
 
     <!-- HERO TAB -->
     <div class="admin-section active" id="tab-hero">
       <h3>🏠 HERO SECTION</h3>
       <div class="admin-grid-2">
-        <div class="admin-field">
-          <label>Main Title</label>
-          <input type="text" id="a-hero-title" value="AL-FAIZ Enterprises">
-        </div>
-        <div class="admin-field">
-          <label>Subtitle</label>
-          <input type="text" id="a-hero-subtitle" value="Moving Pakistan Forward — Since Day One">
-        </div>
+        <div class="admin-field"><label>Main Title</label><input type="text" id="a-hero-title" value="AL-FAIZ Enterprises"></div>
+        <div class="admin-field"><label>Subtitle</label><input type="text" id="a-hero-subtitle" value="Moving Pakistan Forward — Since Day One"></div>
       </div>
-      <div class="admin-field">
-        <label>Hero Description</label>
-        <textarea id="a-hero-desc">A locally and country-wide transport company managing movement of cargo via land destination at all over the country with unmatched reliability.</textarea>
-      </div>
+      <div class="admin-field"><label>Hero Description</label><textarea id="a-hero-desc">A locally and country-wide transport company managing movement of cargo via land destination at all over the country with unmatched reliability.</textarea></div>
       <div class="admin-grid-3">
         <div class="admin-field"><label>Stat 1</label><input type="text" id="a-stat1" value="50+"></div>
         <div class="admin-field"><label>Stat 2</label><input type="text" id="a-stat2" value="24/7"></div>
@@ -1775,67 +1610,42 @@
       <h3>🖼 LOGO SETTINGS</h3>
       <div class="admin-card">
         <div class="admin-card-header"><h4>Company Logo Image</h4></div>
-        <p style="font-size:13px;color:rgba(245,245,245,0.4);margin-bottom:16px;">
-          Upload your company logo. Recommended: <strong style="color:var(--yellow)">PNG with transparent background</strong>, square or landscape, min 200×200px. It will replace the "AF" hexagon icon in the navbar.
-        </p>
+        <p style="font-size:13px;color:rgba(245,245,245,0.4);margin-bottom:16px;">Upload your company logo. Recommended: <strong style="color:var(--yellow)">PNG with transparent background</strong>, square or landscape, min 200×200px.</p>
         <div class="img-upload-wrap">
           <input type="file" accept="image/*" onchange="uploadLogo(this)">
           <span class="icon">🖼</span>
           <p>Click to upload logo (PNG recommended)</p>
           <img id="logo-preview" class="img-preview" style="max-height:80px;object-fit:contain;background:transparent;">
         </div>
-        <div class="admin-field" style="margin-top:16px;">
-          <label>Or enter logo image URL</label>
-          <input type="text" id="a-logo-url" placeholder="https://example.com/logo.png">
-        </div>
+        <div class="admin-field" style="margin-top:16px;"><label>Or enter logo image URL</label><input type="text" id="a-logo-url" placeholder="https://example.com/logo.png"></div>
         <button class="btn-save" onclick="applyLogoUrl()" style="margin-top:8px;">Set Logo from URL</button>
         <button class="btn-danger" onclick="removeLogo()" style="margin-left:10px;margin-top:8px;">Remove Logo (Reset to AF)</button>
       </div>
       <div class="admin-card">
         <div class="admin-card-header"><h4>Company Name in Navbar</h4></div>
         <div class="admin-grid-2">
-          <div class="admin-field">
-            <label>Brand Name (e.g. AL-FAIZ)</label>
-            <input type="text" id="a-brand-name" value="AL-FAIZ">
-          </div>
-          <div class="admin-field">
-            <label>Sub-brand (e.g. Enterprises)</label>
-            <input type="text" id="a-brand-sub" value="Enterprises">
-          </div>
+          <div class="admin-field"><label>Brand Name (e.g. AL-FAIZ)</label><input type="text" id="a-brand-name" value="AL-FAIZ"></div>
+          <div class="admin-field"><label>Sub-brand (e.g. Enterprises)</label><input type="text" id="a-brand-sub" value="Enterprises"></div>
         </div>
         <button class="btn-save" onclick="applyBrandName()">Apply Brand Name</button>
         <div class="admin-success" id="logo-success">✓ Logo updated!</div>
       </div>
     </div>
+
+    <!-- ABOUT TAB -->
     <div class="admin-section" id="tab-about">
       <h3>📖 ABOUT SECTION</h3>
-      <div class="admin-field">
-        <label>Section Heading</label>
-        <input type="text" id="a-about-heading" value="Who We Are">
-      </div>
-      <div class="admin-field">
-        <label>Paragraph 1</label>
-        <textarea id="a-about-p1">AL-FAIZ Enterprises has provided a vital link for Pakistan businesses requiring transportation of consignments within Pakistan. We have built a reputation of reliability in transportation of goods locally and nationally.</textarea>
-      </div>
-      <div class="admin-field">
-        <label>Paragraph 2</label>
-        <textarea id="a-about-p2">Our success is due to our professional approach, competitive pricing and large network. With the quality of service rendered by us right from the beginning, we have become a trusted name in Pakistan's logistics industry.</textarea>
-      </div>
-      <div class="admin-field">
-        <label>Paragraph 3</label>
-        <textarea id="a-about-p3">We pride ourselves on our high standards of ethical business conduct and exceptional service levels. Our objective is quality — to improve service levels and always be prepared to initiate change to meet our clients' requirements.</textarea>
-      </div>
-      <div class="admin-field">
-        <label>Years of Experience Badge</label>
-        <input type="text" id="a-about-years" value="10+">
-      </div>
+      <div class="admin-field"><label>Section Heading</label><input type="text" id="a-about-heading" value="Who We Are"></div>
+      <div class="admin-field"><label>Paragraph 1</label><textarea id="a-about-p1">AL-FAIZ Enterprises has provided a vital link for Pakistan businesses requiring transportation of consignments within Pakistan. We have built a reputation of reliability in transportation of goods locally and nationally.</textarea></div>
+      <div class="admin-field"><label>Paragraph 2</label><textarea id="a-about-p2">Our success is due to our professional approach, competitive pricing and large network. With the quality of service rendered by us right from the beginning, we have become a trusted name in Pakistan's logistics industry.</textarea></div>
+      <div class="admin-field"><label>Paragraph 3</label><textarea id="a-about-p3">We pride ourselves on our high standards of ethical business conduct and exceptional service levels. Our objective is quality — to improve service levels and always be prepared to initiate change to meet our clients' requirements.</textarea></div>
+      <div class="admin-field"><label>Years of Experience Badge</label><input type="text" id="a-about-years" value="10+"></div>
       <div class="admin-field">
         <label>About Section Image URL</label>
         <input type="text" id="a-about-img" value="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80">
         <div class="img-upload-wrap" style="margin-top:10px;">
           <input type="file" accept="image/*" onchange="uploadAboutImg(this)">
-          <span class="icon">📁</span>
-          <p>Or upload image from device</p>
+          <span class="icon">📁</span><p>Or upload image from device</p>
           <img id="about-img-preview" class="img-preview">
         </div>
       </div>
@@ -1865,9 +1675,7 @@
     <!-- TEAM TAB -->
     <div class="admin-section" id="tab-team">
       <h3>👥 OUR PEOPLE SECTION</h3>
-      <p style="font-size:13px;color:rgba(245,245,245,0.4);margin-bottom:20px;">
-        Currently <strong id="team-count-label" style="color:var(--yellow)">4</strong> team members. Add or remove as your staff changes.
-      </p>
+      <p style="font-size:13px;color:rgba(245,245,245,0.4);margin-bottom:20px;">Currently <strong id="team-count-label" style="color:var(--yellow)">4</strong> team members.</p>
       <div id="team-admin-list"></div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
         <button class="btn-yellow" onclick="addTeamMember()">+ Add Team Member</button>
@@ -1881,14 +1689,8 @@
     <div class="admin-section" id="tab-contact">
       <h3>📞 CONTACT INFORMATION</h3>
       <div class="admin-grid-2">
-        <div class="admin-field">
-          <label>Lahore Office Address</label>
-          <textarea id="a-lahore-addr">Plot num 82, Sabzazar Truck Stand, Band Road, Lahore</textarea>
-        </div>
-        <div class="admin-field">
-          <label>Karachi Office Address</label>
-          <textarea id="a-karachi-addr">Plot num 459, Street num 03, Gate num 03, New Truck Stand, Hawksbay Road, Karachi</textarea>
-        </div>
+        <div class="admin-field"><label>Lahore Office Address</label><textarea id="a-lahore-addr">Plot num 82, Sabzazar Truck Stand, Band Road, Lahore</textarea></div>
+        <div class="admin-field"><label>Karachi Office Address</label><textarea id="a-karachi-addr">Plot num 459, Street num 03, Gate num 03, New Truck Stand, Hawksbay Road, Karachi</textarea></div>
       </div>
       <div class="admin-grid-3">
         <div class="admin-field"><label>Phone 1 (Lahore)</label><input type="text" id="a-phone1" value="03001808643"></div>
@@ -1909,28 +1711,53 @@
         <p style="font-size:13px;color:rgba(245,245,245,0.4);margin-bottom:16px;">Upload a video to display as the hero background. Recommended: landscape MP4, min 1920×1080.</p>
         <div class="img-upload-wrap">
           <input type="file" accept="video/*" onchange="uploadHeroVideo(this)">
-          <span class="icon">🎬</span>
-          <p>Click to upload hero background video (MP4 recommended)</p>
+          <span class="icon">🎬</span><p>Click to upload hero background video (MP4 recommended)</p>
         </div>
-        <div class="admin-field" style="margin-top:16px;">
-          <label>Or enter video URL</label>
-          <input type="text" id="a-video-url" placeholder="https://example.com/video.mp4">
-        </div>
+        <div class="admin-field" style="margin-top:16px;"><label>Or enter video URL</label><input type="text" id="a-video-url" placeholder="https://example.com/video.mp4"></div>
         <button class="btn-save" onclick="applyHeroVideo()" style="margin-top:8px;">Set Background Video</button>
+        <div class="admin-field" style="margin-top:16px;">
+          <label>Video Brightness</label>
+          <input type="range" id="a-video-brightness" min="50" max="180" step="5" value="100" oninput="previewVideoBrightness(this.value)">
+          <small style="color:rgba(245,245,245,0.45);font-size:12px;">Current: <span id="a-video-brightness-value">100%</span></small>
+        </div>
+        <button class="btn-save" onclick="applyVideoBrightness()" style="margin-top:8px;">Apply Video Brightness</button>
+        <div class="admin-success" id="media-success">✓ Media settings updated!</div>
       </div>
-      <div class="admin-card">
-        <div class="admin-card-header"><h4>Team Member Photos</h4></div>
-        <p style="font-size:13px;color:rgba(245,245,245,0.4);margin-bottom:16px;">Upload photos for team members from the Team tab.</p>
-        <div id="team-photo-upload-list"></div>
+    </div>
+
+    <!-- ==================== MESSAGES TAB ==================== -->
+    <div class="admin-section" id="tab-messages">
+      <h3>📨 MESSAGES INBOX</h3>
+
+      <!-- Stats bar -->
+      <div class="inbox-stats" id="inbox-stats-bar">
+        <div class="inbox-stat"><span class="num" id="inbox-total">0</span><span class="lbl">Total</span></div>
+        <div class="inbox-stat unread"><span class="num" id="inbox-unread">0</span><span class="lbl">Unread</span></div>
+        <div class="inbox-stat"><span class="num" id="inbox-read">0</span><span class="lbl">Read</span></div>
       </div>
+
+      <!-- Toolbar -->
+      <div class="inbox-toolbar" style="margin-top:20px;">
+        <div class="inbox-filters">
+          <button class="inbox-filter active" onclick="filterMessages('all',this)">All Messages</button>
+          <button class="inbox-filter" onclick="filterMessages('unread',this)">Unread</button>
+          <button class="inbox-filter" onclick="filterMessages('read',this)">Read</button>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-yellow" onclick="markAllRead()" style="font-size:12px;padding:8px 16px;">✓ Mark All Read</button>
+          <button class="btn-danger" onclick="clearAllMessages()" style="font-size:12px;">🗑 Clear All</button>
+        </div>
+      </div>
+
+      <!-- Message list -->
+      <div id="msg-list-container"></div>
     </div>
 
     <!-- STYLE TAB -->
     <div class="admin-section" id="tab-style">
       <h3>🎨 STYLE & APPEARANCE</h3>
-
       <div class="admin-card">
-        <div class="admin-card-header"><h4>🌗 Site Theme (Dark / Light / Color)</h4></div>
+        <div class="admin-card-header"><h4>🌗 Site Theme</h4></div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
           <button class="btn-save" onclick="applyTheme('dark')" style="background:linear-gradient(135deg,#111,#333);">⬛ Dark (Default)</button>
           <button class="btn-save" onclick="applyTheme('light')" style="background:linear-gradient(135deg,#eee,#ccc);color:#111;">⬜ Light</button>
@@ -1938,7 +1765,6 @@
           <button class="btn-save" onclick="applyTheme('forest')" style="background:linear-gradient(135deg,#020f05,#071a0c);">🟩 Forest Green</button>
         </div>
       </div>
-
       <div class="admin-card">
         <div class="admin-card-header"><h4>🔤 Font Style</h4></div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
@@ -1946,41 +1772,27 @@
           <button class="btn-yellow" onclick="applyFont('cyber')" style="font-family:'Orbitron',sans-serif;font-size:12px;">Orbitron (Cyber)</button>
           <button class="btn-yellow" onclick="applyFont('modern')" style="font-family:'Inter',sans-serif;">Inter (Modern)</button>
         </div>
-        <p style="font-size:12px;color:rgba(245,245,245,0.3);">Note: Heading fonts remain bold regardless of selection.</p>
       </div>
-
       <div class="admin-card">
         <div class="admin-card-header"><h4>🎨 Custom Accent Colors</h4></div>
         <div class="admin-grid-3">
-          <div class="admin-field">
-            <label>Primary Color (Red)</label>
-            <input type="color" id="a-color-red" value="#E8000D">
-          </div>
-          <div class="admin-field">
-            <label>Accent Color (Yellow)</label>
-            <input type="color" id="a-color-yellow" value="#FFD700">
-          </div>
-          <div class="admin-field">
-            <label>Background Color</label>
-            <input type="color" id="a-color-bg" value="#050505">
-          </div>
+          <div class="admin-field"><label>Primary Color (Red)</label><input type="color" id="a-color-red" value="#E8000D"></div>
+          <div class="admin-field"><label>Accent Color (Yellow)</label><input type="color" id="a-color-yellow" value="#FFD700"></div>
+          <div class="admin-field"><label>Background Color</label><input type="color" id="a-color-bg" value="#050505"></div>
         </div>
         <button class="btn-save" onclick="applyStyle()">Apply Custom Colors</button>
         <button class="btn-danger" onclick="resetStyle()" style="margin-left:10px;">Reset Colors</button>
       </div>
-
       <div class="admin-success" id="style-success">✓ Style applied!</div>
     </div>
 
-  </div>
-</div>
+  </div><!-- end admin-panel -->
+</div><!-- end admin-overlay -->
 
 <script>
 // ==================== LOADER ====================
 window.addEventListener('load',()=>{
-  setTimeout(()=>{
-    document.getElementById('loader').classList.add('hidden');
-  },2000);
+  setTimeout(()=>document.getElementById('loader').classList.add('hidden'),2000);
 });
 
 // ==================== CURSOR ====================
@@ -2015,40 +1827,315 @@ document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',
     const p=document.createElement('div');
     p.className='particle';
     const size=Math.random()*4+1;
-    p.style.cssText=`
-      width:${size}px;height:${size}px;
-      left:${Math.random()*100}%;
-      background:${colors[Math.floor(Math.random()*colors.length)]};
-      animation-duration:${Math.random()*20+10}s;
-      animation-delay:${Math.random()*-20}s;
-      --drift:${(Math.random()-0.5)*200}px;
-    `;
+    p.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${Math.random()*20+10}s;animation-delay:${Math.random()*-20}s;--drift:${(Math.random()-0.5)*200}px;`;
     container.appendChild(p);
   }
 })();
 
 // ==================== SCROLL REVEAL ====================
 const revealObserver=new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){e.target.classList.add('visible');}
-  });
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
 },{threshold:0.1,rootMargin:'0px 0px -60px 0px'});
 document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
 
-// Fleet bar animation
-const barObserver=new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){e.target.querySelectorAll('.fleet-bar-fill').forEach(f=>f.classList.add('visible'));}
-  });
-},{threshold:0.3});
-const ft=document.querySelector('.fleet-sizes');
-if(ft)barObserver.observe(ft);
+// ==================== MESSAGES SYSTEM ====================
+// Storage key
+const MSG_KEY='alfaiz_messages';
 
-// ==================== CONTACT FORM ====================
-function submitForm(btn){
+function getMessages(){
+  try{return JSON.parse(localStorage.getItem(MSG_KEY))||[];}
+  catch(e){return[];}
+}
+function saveMessages(msgs){
+  localStorage.setItem(MSG_KEY,JSON.stringify(msgs));
+}
+function getUnreadCount(){
+  return getMessages().filter(m=>!m.read).length;
+}
+function updateBadges(){
+  const unread=getUnreadCount();
+  const badge=document.getElementById('nav-msg-badge');
+  const tabBadge=document.getElementById('tab-msg-badge');
+  if(badge){
+    badge.textContent=unread;
+    badge.classList.toggle('show',unread>0);
+  }
+  if(tabBadge){
+    tabBadge.textContent=unread;
+    tabBadge.classList.toggle('show',unread>0);
+  }
+}
+
+// ==================== CONTACT FORM SUBMIT ====================
+function submitContactForm(btn){
+  const name=document.getElementById('cf-name').value.trim();
+  const phone=document.getElementById('cf-phone').value.trim();
+  const email=document.getElementById('cf-email').value.trim();
+  const company=document.getElementById('cf-company').value.trim();
+  const service=document.getElementById('cf-service').value;
+  const message=document.getElementById('cf-message').value.trim();
+
+  if(!name||!message){
+    alert('Please fill in at least your name and message.');
+    return;
+  }
+
+  // Build message object
+  const msgs=getMessages();
+  const newMsg={
+    id: Date.now(),
+    name: name||'Unknown',
+    phone: phone||'—',
+    email: email||'—',
+    company: company||'—',
+    service: service||'Not specified',
+    message: message,
+    timestamp: new Date().toISOString(),
+    read: false,
+    reply: null
+  };
+  msgs.unshift(newMsg); // newest first
+  saveMessages(msgs);
+  updateBadges();
+
+  // Reset form
+  document.getElementById('cf-name').value='';
+  document.getElementById('cf-phone').value='';
+  document.getElementById('cf-email').value='';
+  document.getElementById('cf-company').value='';
+  document.getElementById('cf-service').value='';
+  document.getElementById('cf-message').value='';
+
+  // Show success
+  const sentMsg=document.getElementById('form-sent-msg');
+  sentMsg.style.display='block';
+  setTimeout(()=>sentMsg.style.display='none',5000);
+
   btn.textContent='✓ Enquiry Sent!';
   btn.style.background='linear-gradient(135deg,#00c864,#006432)';
   setTimeout(()=>{btn.textContent='Send Enquiry →';btn.style.background='';},3000);
+}
+
+// ==================== INBOX RENDER ====================
+let currentFilter='all';
+
+function renderInbox(){
+  const allMsgs=getMessages();
+  let msgs=allMsgs;
+  if(currentFilter==='unread') msgs=allMsgs.filter(m=>!m.read);
+  if(currentFilter==='read') msgs=allMsgs.filter(m=>m.read);
+
+  // Update stats
+  document.getElementById('inbox-total').textContent=allMsgs.length;
+  document.getElementById('inbox-unread').textContent=allMsgs.filter(m=>!m.read).length;
+  document.getElementById('inbox-read').textContent=allMsgs.filter(m=>m.read).length;
+
+  const container=document.getElementById('msg-list-container');
+  if(!container)return;
+
+  if(msgs.length===0){
+    container.innerHTML=`
+      <div class="inbox-empty">
+        <span class="empty-icon">📭</span>
+        <p>${currentFilter==='all'?'No messages yet. Messages from the contact form will appear here.':'No '+currentFilter+' messages.'}</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML=`<div class="msg-list">${msgs.map(m=>buildMsgCard(m)).join('')}</div>`;
+}
+
+function buildMsgCard(m){
+  const initials=m.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+  const timeStr=formatTime(m.timestamp);
+  const isUnread=!m.read;
+
+  return `
+  <div class="msg-card ${isUnread?'unread':'read'}" id="msgcard-${m.id}">
+    <div class="msg-card-header" onclick="toggleMsgBody(${m.id})">
+      <div class="msg-card-left">
+        <div class="msg-avatar">${initials}</div>
+        <div class="msg-sender-info">
+          <h4>${escHtml(m.name)}</h4>
+          <div class="msg-sender-meta">
+            ${m.phone!=='—'?`<span>📞 ${escHtml(m.phone)}</span>`:''}
+            ${m.email!=='—'?`<span>✉ ${escHtml(m.email)}</span>`:''}
+            ${m.company!=='—'?`<span>🏢 ${escHtml(m.company)}</span>`:''}
+            <span class="msg-service-tag">${escHtml(m.service)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="msg-card-right">
+        <span class="msg-time">${timeStr}</span>
+        ${isUnread?'<span class="msg-unread-dot"></span>':'<span class="msg-status-read">READ</span>'}
+      </div>
+    </div>
+    <div class="msg-body" id="msgbody-${m.id}">
+      <div class="msg-detail-row"><span class="lbl">FROM</span><span class="val">${escHtml(m.name)}</span></div>
+      ${m.phone!=='—'?`<div class="msg-detail-row"><span class="lbl">PHONE</span><span class="val"><a href="tel:${escHtml(m.phone)}">${escHtml(m.phone)}</a></span></div>`:''}
+      ${m.email!=='—'?`<div class="msg-detail-row"><span class="lbl">EMAIL</span><span class="val"><a href="mailto:${escHtml(m.email)}">${escHtml(m.email)}</a></span></div>`:''}
+      ${m.company!=='—'?`<div class="msg-detail-row"><span class="lbl">COMPANY</span><span class="val">${escHtml(m.company)}</span></div>`:''}
+      <div class="msg-detail-row"><span class="lbl">SERVICE</span><span class="val">${escHtml(m.service)}</span></div>
+      <div class="msg-detail-row"><span class="lbl">DATE</span><span class="val">${new Date(m.timestamp).toLocaleString()}</span></div>
+      <div class="msg-body-content">${escHtml(m.message)}</div>
+      ${m.reply?`<div style="margin-top:12px;"><div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--yellow);letter-spacing:1px;margin-bottom:6px;">YOUR REPLY:</div><div class="msg-body-content" style="border-left-color:rgba(255,215,0,0.4);color:rgba(245,245,245,0.5);">${escHtml(m.reply)}</div></div>`:''}
+      <div class="msg-actions">
+        ${m.phone!=='—'?`<button class="msg-action-btn reply" onclick="callSender('${escHtml(m.phone)}')">📞 Call</button>`:''}
+        ${m.email!=='—'?`<button class="msg-action-btn reply" onclick="replyByEmail(${m.id})">✉ Reply Email</button>`:''}
+        ${m.phone!=='—'?`<button class="msg-action-btn reply" onclick="replyByWhatsApp(${m.id})">💬 Reply WhatsApp</button>`:''}
+        <button class="msg-action-btn reply" onclick="toggleReplyBox(${m.id})">✏ Draft Reply</button>
+        ${isUnread?`<button class="msg-action-btn mark-read" onclick="markMsgRead(${m.id})">✓ Mark Read</button>`:''}
+        <button class="msg-action-btn delete" onclick="deleteMsg(${m.id})">🗑 Delete</button>
+      </div>
+      <div class="reply-box" id="replybox-${m.id}">
+        <textarea placeholder="Write your reply draft here..." id="replytext-${m.id}">${m.reply||''}</textarea>
+        <div class="reply-box-actions">
+          <button class="btn-save" onclick="saveReply(${m.id})" style="margin-top:0;font-size:12px;padding:8px 20px;">💾 Save Note</button>
+          ${m.email!=='—'?`<button class="btn-save" onclick="replyByEmail(${m.id})" style="margin-top:0;font-size:12px;padding:8px 20px;">✉ Send via Email App</button>`:''}
+          ${m.phone!=='—'?`<button class="btn-save" onclick="replyByWhatsApp(${m.id})" style="margin-top:0;font-size:12px;padding:8px 20px;">💬 Send via WhatsApp</button>`:''}
+          <span class="reply-note">Draft is reused for quick reply actions</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatTime(iso){
+  const d=new Date(iso);
+  const now=new Date();
+  const diff=now-d;
+  if(diff<60000) return 'Just now';
+  if(diff<3600000) return Math.floor(diff/60000)+'m ago';
+  if(diff<86400000) return Math.floor(diff/3600000)+'h ago';
+  if(diff<604800000) return Math.floor(diff/86400000)+'d ago';
+  return d.toLocaleDateString('en-PK',{day:'numeric',month:'short'});
+}
+
+function toggleMsgBody(id){
+  const body=document.getElementById('msgbody-'+id);
+  const card=document.getElementById('msgcard-'+id);
+  if(!body)return;
+  body.classList.toggle('open');
+  // Auto mark as read when opened
+  if(body.classList.contains('open')){
+    const msgs=getMessages();
+    const idx=msgs.findIndex(m=>m.id===id);
+    if(idx>-1&&!msgs[idx].read){
+      msgs[idx].read=true;
+      saveMessages(msgs);
+      if(card)card.classList.replace('unread','read');
+      updateBadges();
+      renderInbox();
+      // Re-open the body since renderInbox re-renders
+      setTimeout(()=>{
+        const newBody=document.getElementById('msgbody-'+id);
+        if(newBody)newBody.classList.add('open');
+      },10);
+    }
+  }
+}
+
+function toggleReplyBox(id){
+  const box=document.getElementById('replybox-'+id);
+  if(box)box.classList.toggle('open');
+}
+
+function saveReply(id){
+  const text=document.getElementById('replytext-'+id)?.value||'';
+  const msgs=getMessages();
+  const idx=msgs.findIndex(m=>m.id===id);
+  if(idx>-1){msgs[idx].reply=text;saveMessages(msgs);}
+  renderInbox();
+  setTimeout(()=>{
+    const body=document.getElementById('msgbody-'+id);
+    if(body)body.classList.add('open');
+  },10);
+}
+
+function markMsgRead(id){
+  const msgs=getMessages();
+  const idx=msgs.findIndex(m=>m.id===id);
+  if(idx>-1){msgs[idx].read=true;saveMessages(msgs);}
+  updateBadges();
+  renderInbox();
+}
+
+function markAllRead(){
+  const msgs=getMessages().map(m=>({...m,read:true}));
+  saveMessages(msgs);
+  updateBadges();
+  renderInbox();
+}
+
+function deleteMsg(id){
+  if(!confirm('Delete this message?'))return;
+  const msgs=getMessages().filter(m=>m.id!==id);
+  saveMessages(msgs);
+  updateBadges();
+  renderInbox();
+}
+
+function clearAllMessages(){
+  if(!confirm('Delete ALL messages? This cannot be undone.'))return;
+  saveMessages([]);
+  updateBadges();
+  renderInbox();
+}
+
+function callSender(phone){
+  window.open('tel:'+phone);
+}
+
+function getMessageById(id){
+  return getMessages().find(m=>m.id===id);
+}
+
+function buildReplyText(m){
+  const draft=(m.reply||'').trim();
+  const intro=`Assalam-o-Alaikum ${m.name},\n\nThank you for contacting AL-FAIZ Enterprises.`;
+  const serviceLine=m.service&&m.service!=='Not specified'?`\nService requested: ${m.service}`:'';
+  const closing='\n\nBest regards,\nAL-FAIZ Enterprises';
+  if(draft){
+    return `${intro}${serviceLine}\n\n${draft}${closing}`;
+  }
+  return `${intro}${serviceLine}\n\nWe have received your message and our team will get back to you shortly.${closing}`;
+}
+
+function replyByEmail(id){
+  const m=getMessageById(id);
+  if(!m||!m.email||m.email==='—'){
+    alert('Customer email not available for this message.');
+    return;
+  }
+  const subject=encodeURIComponent('Reply from AL-FAIZ Enterprises');
+  const body=encodeURIComponent(buildReplyText(m));
+  window.open(`mailto:${m.email}?subject=${subject}&body=${body}`,'_blank');
+}
+
+function replyByWhatsApp(id){
+  const m=getMessageById(id);
+  if(!m||!m.phone||m.phone==='—'){
+    alert('Customer phone number not available for this message.');
+    return;
+  }
+  const normalized=String(m.phone).replace(/[^\d]/g,'');
+  if(!normalized){
+    alert('Phone number is invalid for WhatsApp reply.');
+    return;
+  }
+  const text=encodeURIComponent(buildReplyText(m));
+  window.open(`https://wa.me/${normalized}?text=${text}`,'_blank');
+}
+
+function filterMessages(filter, btn){
+  currentFilter=filter;
+  document.querySelectorAll('.inbox-filter').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderInbox();
 }
 
 // ==================== ADMIN DATA ====================
@@ -2073,7 +2160,7 @@ let adminData={
   ],
   team:[
     {name:'Mr. Mudassir',role:'Chief Executive Officer',desc:'Visionary leader driving AL-FAIZ Enterprises with excellence, integrity, and a commitment to customer satisfaction.',photo:''},
-    {name:'Operations Manager',role:'Head of Operations',desc:'Overseeing all fleet deployments and ensuring on-time delivery of cargo across Pakistan\'s transport network.',photo:''},
+    {name:'Operations Manager',role:'Head of Operations',desc:"Overseeing all fleet deployments and ensuring on-time delivery of cargo across Pakistan's transport network.",photo:''},
     {name:'Fleet Supervisor',role:'Technical Fleet Lead',desc:'Responsible for maintaining all vehicles to peak operational condition. 24/7 technical readiness specialist.',photo:''},
     {name:'Logistics Coordinator',role:'Karachi Office Head',desc:'Managing Karachi port operations and all import/export container logistics with precision and professionalism.',photo:''},
   ]
@@ -2098,6 +2185,8 @@ function verifyAdmin(){
     document.getElementById('admin-login').style.display='none';
     document.getElementById('admin-dashboard').classList.add('show');
     buildAdminForms();
+    updateBadges();
+    renderInbox();
   }else{
     document.getElementById('admin-pw-error').style.display='block';
     document.getElementById('admin-pw-input').value='';
@@ -2105,11 +2194,12 @@ function verifyAdmin(){
 }
 
 // ==================== ADMIN TABS ====================
-function switchTab(tab){
+function switchTab(tab,btn){
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
-  event.target.classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(tab==='messages'){renderInbox();}
 }
 
 // ==================== BUILD ADMIN FORMS ====================
@@ -2117,7 +2207,6 @@ function buildAdminForms(){
   buildServicesAdmin();
   buildFleetAdmin();
   buildTeamAdmin();
-  buildTeamPhotoAdmin();
 }
 
 function buildServicesAdmin(){
@@ -2126,10 +2215,7 @@ function buildServicesAdmin(){
   adminData.services.forEach((s,i)=>{
     list.innerHTML+=`
     <div class="admin-card" id="svc-card-${i}">
-      <div class="admin-card-header">
-        <h4>SERVICE ${i+1}</h4>
-        <button class="btn-danger" onclick="removeService(${i})">Remove</button>
-      </div>
+      <div class="admin-card-header"><h4>SERVICE ${i+1}</h4><button class="btn-danger" onclick="removeService(${i})">Remove</button></div>
       <div class="admin-grid-3">
         <div class="admin-field"><label>Icon (emoji)</label><input type="text" id="svc-icon-${i}" value="${s.icon}"></div>
         <div class="admin-field" style="grid-column:span 2"><label>Title</label><input type="text" id="svc-title-${i}" value="${s.title}"></div>
@@ -2138,23 +2224,15 @@ function buildServicesAdmin(){
     </div>`;
   });
 }
-
-function addService(){
-  adminData.services.push({icon:'🚚',title:'New Service',desc:'Service description here.'});
-  buildServicesAdmin();
-}
-function removeService(i){
-  adminData.services.splice(i,1);
-  buildServicesAdmin();
-}
+function addService(){adminData.services.push({icon:'🚚',title:'New Service',desc:'Service description here.'});buildServicesAdmin();}
+function removeService(i){adminData.services.splice(i,1);buildServicesAdmin();}
 function applyServices(){
   adminData.services.forEach((s,i)=>{
     s.icon=document.getElementById('svc-icon-'+i)?.value||s.icon;
     s.title=document.getElementById('svc-title-'+i)?.value||s.title;
     s.desc=document.getElementById('svc-desc-'+i)?.value||s.desc;
   });
-  renderServices();
-  showSuccess('services-success');
+  renderServices();showSuccess('services-success');
 }
 function renderServices(){
   const grid=document.getElementById('services-grid');
@@ -2174,10 +2252,7 @@ function buildFleetAdmin(){
   adminData.fleet.forEach((f,i)=>{
     list.innerHTML+=`
     <div class="admin-card">
-      <div class="admin-card-header">
-        <h4>VEHICLE ${i+1}</h4>
-        <button class="btn-danger" onclick="removeFleetRow(${i})">Remove</button>
-      </div>
+      <div class="admin-card-header"><h4>VEHICLE ${i+1}</h4><button class="btn-danger" onclick="removeFleetRow(${i})">Remove</button></div>
       <div class="admin-grid-3">
         <div class="admin-field"><label>Name</label><input type="text" id="fl-name-${i}" value="${f.name}"></div>
         <div class="admin-field"><label>Size</label><input type="text" id="fl-size-${i}" value="${f.size}"></div>
@@ -2186,22 +2261,15 @@ function buildFleetAdmin(){
     </div>`;
   });
 }
-function addFleetRow(){
-  adminData.fleet.push({name:'New Vehicle',size:'XX Ft',capacity:'X Ton'});
-  buildFleetAdmin();
-}
-function removeFleetRow(i){
-  adminData.fleet.splice(i,1);
-  buildFleetAdmin();
-}
+function addFleetRow(){adminData.fleet.push({name:'New Vehicle',size:'XX Ft',capacity:'X Ton'});buildFleetAdmin();}
+function removeFleetRow(i){adminData.fleet.splice(i,1);buildFleetAdmin();}
 function applyFleet(){
   adminData.fleet.forEach((f,i)=>{
     f.name=document.getElementById('fl-name-'+i)?.value||f.name;
     f.size=document.getElementById('fl-size-'+i)?.value||f.size;
     f.capacity=document.getElementById('fl-cap-'+i)?.value||f.capacity;
   });
-  renderFleet();
-  showSuccess('fleet-success');
+  renderFleet();showSuccess('fleet-success');
 }
 function renderFleet(){
   const body=document.querySelector('.fleet-sizes');
@@ -2231,8 +2299,7 @@ function buildTeamAdmin(){
         <label>Photo (upload)</label>
         <div class="img-upload-wrap">
           <input type="file" accept="image/*" onchange="uploadTeamPhoto(this,${i})">
-          <span class="icon">📷</span>
-          <p>Upload team member photo</p>
+          <span class="icon">📷</span><p>Upload team member photo</p>
           <img id="tm-photo-preview-${i}" class="img-preview" ${t.photo?'src="'+t.photo+'" style="display:block;"':''}>
         </div>
       </div>
@@ -2240,8 +2307,7 @@ function buildTeamAdmin(){
   });
 }
 function uploadTeamPhoto(input,idx){
-  const file=input.files[0];
-  if(!file)return;
+  const file=input.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=e=>{
     adminData.team[idx].photo=e.target.result;
@@ -2250,27 +2316,20 @@ function uploadTeamPhoto(input,idx){
   };
   reader.readAsDataURL(file);
 }
-function buildTeamPhotoAdmin(){
-  // Handled in team admin list
-}
 function applyTeam(){
   adminData.team.forEach((t,i)=>{
     t.name=document.getElementById('tm-name-'+i)?.value||t.name;
     t.role=document.getElementById('tm-role-'+i)?.value||t.role;
     t.desc=document.getElementById('tm-desc-'+i)?.value||t.desc;
   });
-  renderTeam();
-  showSuccess('team-success');
+  renderTeam();showSuccess('team-success');
 }
 function renderTeam(){
   const grid=document.getElementById('team-grid');
   grid.innerHTML=adminData.team.map(t=>`
     <div class="team-card reveal">
       <div class="team-img-wrap">
-        ${t.photo
-          ?`<img src="${t.photo}" alt="${t.name}">`
-          :`<div class="team-img-placeholder"><span class="team-avatar-icon">👤</span></div>`
-        }
+        ${t.photo?`<img src="${t.photo}" alt="${t.name}">`:`<div class="team-img-placeholder"><span class="team-avatar-icon">👤</span></div>`}
         <div class="team-img-overlay"></div>
       </div>
       <div class="team-info">
@@ -2282,7 +2341,6 @@ function renderTeam(){
   grid.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
 }
 
-// ==================== HERO APPLY ====================
 function applyHero(){
   document.getElementById('hero-title-text').innerHTML=document.getElementById('a-hero-title').value;
   document.getElementById('hero-subtitle-text').textContent=document.getElementById('a-hero-subtitle').value;
@@ -2294,7 +2352,6 @@ function applyHero(){
   showSuccess('hero-success');
 }
 
-// ==================== ABOUT APPLY ====================
 function applyAbout(){
   const heading=document.getElementById('a-about-heading').value;
   document.getElementById('about-heading').innerHTML=heading.replace(/\b(\w+)$/,'<span>$1</span>');
@@ -2307,8 +2364,7 @@ function applyAbout(){
   showSuccess('about-success');
 }
 function uploadAboutImg(input){
-  const file=input.files[0];
-  if(!file)return;
+  const file=input.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=e=>{
     document.getElementById('about-img').src=e.target.result;
@@ -2319,7 +2375,6 @@ function uploadAboutImg(input){
   reader.readAsDataURL(file);
 }
 
-// ==================== CONTACT APPLY ====================
 function applyContact(){
   document.getElementById('lahore-addr').textContent=document.getElementById('a-lahore-addr').value;
   document.getElementById('karachi-addr').textContent=document.getElementById('a-karachi-addr').value;
@@ -2335,52 +2390,77 @@ function applyContact(){
   showSuccess('contact-success');
 }
 
-// ==================== HERO VIDEO ====================
-let _heroBlobUrl = '';
+let heroVideoBlobUrl='';
 
-function _setHeroVideo(src) {
-  const vid = document.getElementById('hero-video-bg');
-  if (!vid) return;
-  // Remove all child <source> elements so they don't override vid.src
-  while (vid.firstChild) vid.removeChild(vid.firstChild);
+function setHeroVideoSource(src,mimeType=''){
+  const vid=document.getElementById('hero-video-bg');
+  if(!vid)return;
+
+  // Keep both <video src> and nested <source src> in sync.
   vid.pause();
-  vid.removeAttribute('src');
-  vid.load(); // reset internal state
-  vid.src = src;
-  vid.muted = true;
-  vid.loop = true;
+  vid.muted=true;
+  vid.setAttribute('playsinline','');
+  vid.setAttribute('autoplay','');
+
+  const sourceEl=vid.querySelector('source');
+  if(sourceEl){
+    sourceEl.src=src;
+    if(mimeType){
+      sourceEl.type=mimeType;
+    }else{
+      sourceEl.removeAttribute('type');
+    }
+  }
+  vid.src=src;
   vid.load();
-  const p = vid.play();
-  if (p && p.catch) p.catch(() => {});
+
+  const playPromise=vid.play();
+  if(playPromise&&typeof playPromise.catch==='function'){
+    playPromise.catch(()=>{
+      // In some browsers autoplay can be blocked; keep video loaded and let user interact.
+      console.warn('Autoplay blocked: click anywhere and try again if needed.');
+    });
+  }
 }
 
-function uploadHeroVideo(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (!file.type.startsWith('video/')) {
-    alert('Please select a valid video file (MP4 recommended).');
+function uploadHeroVideo(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('video/')){
+    alert('Please select a valid video file.');
     return;
   }
-  if (_heroBlobUrl) { URL.revokeObjectURL(_heroBlobUrl); _heroBlobUrl = ''; }
-  _heroBlobUrl = URL.createObjectURL(file);
-  _setHeroVideo(_heroBlobUrl);
-  // Show confirmation
-  const btn = document.querySelector('#tab-media .btn-save');
-  const note = document.createElement('div');
-  note.style.cssText = 'color:#00c864;font-size:13px;letter-spacing:1px;margin-top:10px;';
-  note.textContent = '✓ Video loaded: ' + file.name;
-  const wrap = input.closest('.img-upload-wrap');
-  if (wrap) { const old = wrap.parentNode.querySelector('.video-ok'); if(old) old.remove(); note.className='video-ok'; wrap.parentNode.appendChild(note); }
+
+  if(heroVideoBlobUrl){
+    URL.revokeObjectURL(heroVideoBlobUrl);
+  }
+  heroVideoBlobUrl=URL.createObjectURL(file);
+  setHeroVideoSource(heroVideoBlobUrl,file.type||'video/mp4');
+  input.value='';
 }
 
-function applyHeroVideo() {
-  const url = document.getElementById('a-video-url').value.trim();
-  if (!url) { alert('Please enter a video URL first.'); return; }
-  _setHeroVideo(url);
-  showSuccess('hero-success');
+function applyHeroVideo(){
+  const url=document.getElementById('a-video-url').value.trim();
+  if(!url)return;
+  setHeroVideoSource(url,'');
+  showSuccess('media-success');
 }
 
-// ==================== LOGO ====================
+function previewVideoBrightness(value){
+  const percent=Number(value)||100;
+  const bright=(percent/100).toFixed(2);
+  document.documentElement.style.setProperty('--hero-video-brightness',bright);
+  const label=document.getElementById('a-video-brightness-value');
+  if(label)label.textContent=percent+'%';
+}
+
+function applyVideoBrightness(){
+  const slider=document.getElementById('a-video-brightness');
+  if(!slider)return;
+  previewVideoBrightness(slider.value);
+  showSuccess('media-success');
+}
+
 function uploadLogo(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
@@ -2400,13 +2480,6 @@ function setLogoImg(src){
   const img=document.getElementById('nav-logo-img');
   const icon=document.getElementById('nav-logo-icon');
   img.src=src;img.classList.add('show');icon.classList.add('hide');
-  // Also update footer logo
-  const footerIcon=document.querySelector('.footer-brand .nav-logo-icon');
-  if(footerIcon){
-    const fi=document.createElement('img');
-    fi.src=src;fi.style.cssText='width:44px;height:44px;border-radius:6px;object-fit:contain;background:#fff;padding:2px;';
-    footerIcon.replaceWith(fi);
-  }
 }
 function removeLogo(){
   const img=document.getElementById('nav-logo-img');
@@ -2423,47 +2496,29 @@ function applyBrandName(){
   showSuccess('logo-success');
 }
 
-// ==================== TEAM ADD/REMOVE ====================
 function addTeamMember(){
   adminData.team.push({name:'New Member',role:'Position / Role',desc:'Description of responsibilities and expertise.',photo:''});
-  buildTeamAdmin();
-  updateTeamCountLabel();
+  buildTeamAdmin();updateTeamCountLabel();
 }
 function removeLastTeamMember(){
   if(adminData.team.length<=1){alert('Must have at least 1 team member.');return;}
-  if(confirm('Remove the last team member?')){
-    adminData.team.pop();
-    buildTeamAdmin();
-    updateTeamCountLabel();
-  }
+  if(confirm('Remove the last team member?')){adminData.team.pop();buildTeamAdmin();updateTeamCountLabel();}
 }
 function updateTeamCountLabel(){
   const lbl=document.getElementById('team-count-label');
   if(lbl)lbl.textContent=adminData.team.length;
 }
 
-// ==================== THEME SWITCHER ====================
 function applyTheme(theme){
   document.body.classList.remove('theme-light','theme-navy','theme-forest');
   if(theme!=='dark')document.body.classList.add('theme-'+theme);
   showSuccess('style-success');
 }
-
-// ==================== FONT SWITCHER ====================
 function applyFont(font){
   document.body.classList.remove('font-default','font-cyber','font-modern');
   document.body.classList.add('font-'+font);
-  // Load font if needed
-  if(font==='modern'&&!document.getElementById('inter-font')){
-    const l=document.createElement('link');
-    l.id='inter-font';l.rel='stylesheet';
-    l.href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap';
-    document.head.appendChild(l);
-  }
   showSuccess('style-success');
 }
-
-// ==================== STYLE ====================
 function applyStyle(){
   const red=document.getElementById('a-color-red').value;
   const yellow=document.getElementById('a-color-yellow').value;
@@ -2482,15 +2537,8 @@ function resetStyle(){
   document.getElementById('a-color-bg').value='#050505';
 }
 
-// ==================== SAVE ALL ====================
 function saveAll(){
-  applyHero();
-  applyAbout();
-  applyServices();
-  applyFleet();
-  applyTeam();
-  applyContact();
-  // Show banner
+  applyHero();applyAbout();applyServices();applyFleet();applyTeam();applyContact();
   const banner=document.createElement('div');
   banner.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#00c864,#006432);color:#fff;padding:14px 32px;border-radius:8px;font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:2px;z-index:999999;box-shadow:0 10px 40px rgba(0,200,100,0.4);';
   banner.textContent='✓ ALL CHANGES SAVED SUCCESSFULLY';
@@ -2505,7 +2553,7 @@ function showSuccess(id){
   setTimeout(()=>el.classList.remove('show'),3000);
 }
 
-// ==================== SMOOTH SCROLL ACTIVE NAV ====================
+// Nav active section
 const sections=['hero','about','services','fleet','history','team','mission','contact'];
 const navLinks=document.querySelectorAll('.nav-links a[href^="#"]');
 window.addEventListener('scroll',()=>{
@@ -2519,9 +2567,17 @@ window.addEventListener('scroll',()=>{
   });
 });
 
-// Prevent cursor blinking on touch
 document.addEventListener('touchstart',()=>{
   cursor.style.display='none';ring.style.display='none';
+});
+
+// Init badges on page load
+updateBadges();
+previewVideoBrightness(document.getElementById('a-video-brightness')?.value||100);
+
+// Helpful runtime signal if media URL/file cannot be played
+document.getElementById('hero-video-bg')?.addEventListener('error',()=>{
+  alert('Hero video could not be played. Please use MP4 (H.264/AAC) or a direct video URL.');
 });
 </script>
 </body>
