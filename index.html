@@ -2379,15 +2379,59 @@ function applyContact(){
   showSuccess('contact-success');
 }
 
-function uploadHeroVideo(input){
-  const file=input.files[0];if(!file)return;
-  const url=URL.createObjectURL(file);
+let heroVideoBlobUrl='';
+
+function setHeroVideoSource(src,mimeType=''){
   const vid=document.getElementById('hero-video-bg');
-  vid.src=url;vid.load();vid.play();
+  if(!vid)return;
+
+  // Keep both <video src> and nested <source src> in sync.
+  vid.pause();
+  vid.muted=true;
+  vid.setAttribute('playsinline','');
+  vid.setAttribute('autoplay','');
+
+  const sourceEl=vid.querySelector('source');
+  if(sourceEl){
+    sourceEl.src=src;
+    if(mimeType){
+      sourceEl.type=mimeType;
+    }else{
+      sourceEl.removeAttribute('type');
+    }
+  }
+  vid.src=src;
+  vid.load();
+
+  const playPromise=vid.play();
+  if(playPromise&&typeof playPromise.catch==='function'){
+    playPromise.catch(()=>{
+      // In some browsers autoplay can be blocked; keep video loaded and let user interact.
+      console.warn('Autoplay blocked: click anywhere and try again if needed.');
+    });
+  }
 }
+
+function uploadHeroVideo(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('video/')){
+    alert('Please select a valid video file.');
+    return;
+  }
+
+  if(heroVideoBlobUrl){
+    URL.revokeObjectURL(heroVideoBlobUrl);
+  }
+  heroVideoBlobUrl=URL.createObjectURL(file);
+  setHeroVideoSource(heroVideoBlobUrl,file.type||'video/mp4');
+  input.value='';
+}
+
 function applyHeroVideo(){
-  const url=document.getElementById('a-video-url').value;
-  if(url){const vid=document.getElementById('hero-video-bg');vid.src=url;vid.load();vid.play();}
+  const url=document.getElementById('a-video-url').value.trim();
+  if(!url)return;
+  setHeroVideoSource(url,'');
 }
 
 function uploadLogo(input){
@@ -2502,6 +2546,11 @@ document.addEventListener('touchstart',()=>{
 
 // Init badges on page load
 updateBadges();
+
+// Helpful runtime signal if media URL/file cannot be played
+document.getElementById('hero-video-bg')?.addEventListener('error',()=>{
+  alert('Hero video could not be played. Please use MP4 (H.264/AAC) or a direct video URL.');
+});
 </script>
 </body>
 </html>
