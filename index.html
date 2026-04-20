@@ -2140,6 +2140,7 @@ function filterMessages(filter, btn){
 
 // ==================== ADMIN DATA ====================
 const ADMIN_PASS='Mudassir87714';
+const ADMIN_DATA_KEY='alfaiz_admin_data_v2';
 let adminData={
   services:[
     {icon:'🚛',title:'Containerised Cargo Handling',desc:'Complete handling of both hazardous and non-hazardous goods and chemicals in fully certified containers with strict safety protocols.'},
@@ -2166,6 +2167,183 @@ let adminData={
   ]
 };
 
+function saveAdminData(){
+  try{
+    const payload={
+      adminData,
+      pageState:{
+        hero:{
+          title:document.getElementById('hero-title-text')?.innerHTML||'',
+          subtitle:document.getElementById('hero-subtitle-text')?.textContent||'',
+          desc:document.getElementById('hero-desc-text')?.textContent||'',
+          stat1:document.getElementById('stat1')?.textContent||'',
+          stat2:document.getElementById('stat2')?.textContent||'',
+          stat3:document.getElementById('stat3')?.textContent||'',
+          stat4:document.getElementById('stat4')?.textContent||''
+        },
+        about:{
+          headingInput:document.getElementById('a-about-heading')?.value||'',
+          p1:document.getElementById('about-p1')?.textContent||'',
+          p2:document.getElementById('about-p2')?.textContent||'',
+          p3:document.getElementById('about-p3')?.textContent||'',
+          years:document.getElementById('about-years')?.textContent||'',
+          image:document.getElementById('about-img')?.src||''
+        },
+        contact:{
+          lahore:document.getElementById('lahore-addr')?.textContent||'',
+          karachi:document.getElementById('karachi-addr')?.textContent||'',
+          phone1:document.getElementById('phone1')?.textContent||'',
+          phone2:document.getElementById('phone2')?.textContent||'',
+          phone3:(document.getElementById('phone3')?.textContent||'').replace(' (Karachi)',''),
+          email:document.getElementById('email1')?.textContent||'',
+          footerDesc:document.getElementById('footer-desc')?.textContent||''
+        },
+        branding:{
+          logo:document.getElementById('nav-logo-img')?.src||'',
+          navText:document.getElementById('nav-logo-text')?.innerHTML||'',
+          navSub:document.getElementById('nav-logo-sub')?.textContent||''
+        },
+        media:{
+          videoSrc:document.getElementById('hero-video-bg')?.src||'',
+          videoUrlInput:document.getElementById('a-video-url')?.value||'',
+          brightness:document.getElementById('a-video-brightness')?.value||'100'
+        },
+        style:{
+          red:getComputedStyle(document.documentElement).getPropertyValue('--red').trim()||'#E8000D',
+          yellow:getComputedStyle(document.documentElement).getPropertyValue('--yellow').trim()||'#FFD700',
+          black:getComputedStyle(document.documentElement).getPropertyValue('--black').trim()||'#050505',
+          themeLight:document.body.classList.contains('theme-light'),
+          themeNavy:document.body.classList.contains('theme-navy'),
+          themeForest:document.body.classList.contains('theme-forest'),
+          fontDefault:document.body.classList.contains('font-default'),
+          fontCyber:document.body.classList.contains('font-cyber'),
+          fontModern:document.body.classList.contains('font-modern')
+        }
+      }
+    };
+    localStorage.setItem(ADMIN_DATA_KEY,JSON.stringify(payload));
+  }catch(err){
+    console.warn('Could not save admin data:',err);
+  }
+}
+
+function hydrateAdminInputsFromPage(){
+  const setVal=(id,val)=>{const el=document.getElementById(id);if(el&&val!==undefined&&val!==null)el.value=val;};
+  setVal('a-hero-title',document.getElementById('hero-title-text')?.textContent||'');
+  setVal('a-hero-subtitle',document.getElementById('hero-subtitle-text')?.textContent||'');
+  setVal('a-hero-desc',document.getElementById('hero-desc-text')?.textContent||'');
+  setVal('a-stat1',document.getElementById('stat1')?.textContent||'');
+  setVal('a-stat2',document.getElementById('stat2')?.textContent||'');
+  setVal('a-stat3',document.getElementById('stat3')?.textContent||'');
+  setVal('a-stat4',document.getElementById('stat4')?.textContent||'');
+  setVal('a-about-p1',document.getElementById('about-p1')?.textContent||'');
+  setVal('a-about-p2',document.getElementById('about-p2')?.textContent||'');
+  setVal('a-about-p3',document.getElementById('about-p3')?.textContent||'');
+  setVal('a-about-years',document.getElementById('about-years')?.textContent||'');
+  setVal('a-lahore-addr',document.getElementById('lahore-addr')?.textContent||'');
+  setVal('a-karachi-addr',document.getElementById('karachi-addr')?.textContent||'');
+  setVal('a-phone1',document.getElementById('phone1')?.textContent||'');
+  setVal('a-phone2',document.getElementById('phone2')?.textContent||'');
+  setVal('a-phone3',(document.getElementById('phone3')?.textContent||'').replace(' (Karachi)',''));
+  setVal('a-email1',document.getElementById('email1')?.textContent||'');
+  setVal('a-footer-desc',document.getElementById('footer-desc')?.textContent||'');
+  setVal('a-brand-sub',document.getElementById('nav-logo-sub')?.textContent||'');
+}
+
+function loadAdminData(){
+  try{
+    const raw=localStorage.getItem(ADMIN_DATA_KEY);
+    if(!raw)return;
+    const parsed=JSON.parse(raw);
+    if(!parsed||typeof parsed!=='object')return;
+    // Backward compatibility: old format saved adminData directly.
+    if(Array.isArray(parsed.services)&&Array.isArray(parsed.fleet)&&Array.isArray(parsed.team)){
+      adminData=parsed;
+      renderServices();renderFleet();renderTeam();
+      return;
+    }
+
+    if(parsed.adminData&&Array.isArray(parsed.adminData.services)&&Array.isArray(parsed.adminData.fleet)&&Array.isArray(parsed.adminData.team)){
+      adminData=parsed.adminData;
+      renderServices();renderFleet();renderTeam();
+    }
+
+    const s=parsed.pageState||{};
+    if(s.hero){
+      if(s.hero.title)document.getElementById('hero-title-text').innerHTML=s.hero.title;
+      if(s.hero.subtitle)document.getElementById('hero-subtitle-text').textContent=s.hero.subtitle;
+      if(s.hero.desc)document.getElementById('hero-desc-text').textContent=s.hero.desc;
+      if(s.hero.stat1)document.getElementById('stat1').textContent=s.hero.stat1;
+      if(s.hero.stat2)document.getElementById('stat2').textContent=s.hero.stat2;
+      if(s.hero.stat3)document.getElementById('stat3').textContent=s.hero.stat3;
+      if(s.hero.stat4)document.getElementById('stat4').textContent=s.hero.stat4;
+    }
+    if(s.about){
+      const headingInput=s.about.headingInput||'Who We Are';
+      document.getElementById('about-heading').innerHTML=headingInput.replace(/\b(\w+)$/,'<span>$1</span>');
+      if(s.about.p1)document.getElementById('about-p1').textContent=s.about.p1;
+      if(s.about.p2)document.getElementById('about-p2').textContent=s.about.p2;
+      if(s.about.p3)document.getElementById('about-p3').textContent=s.about.p3;
+      if(s.about.years)document.getElementById('about-years').textContent=s.about.years;
+      if(s.about.image)document.getElementById('about-img').src=s.about.image;
+      const headingInputEl=document.getElementById('a-about-heading');
+      if(headingInputEl)headingInputEl.value=headingInput;
+    }
+    if(s.contact){
+      if(s.contact.lahore)document.getElementById('lahore-addr').textContent=s.contact.lahore;
+      if(s.contact.karachi)document.getElementById('karachi-addr').textContent=s.contact.karachi;
+      const p1=s.contact.phone1||document.getElementById('phone1').textContent;
+      const p2=s.contact.phone2||document.getElementById('phone2').textContent;
+      const p3=s.contact.phone3||document.getElementById('phone3').textContent.replace(' (Karachi)','');
+      const em=s.contact.email||document.getElementById('email1').textContent;
+      document.getElementById('phone1').textContent=p1;document.getElementById('phone1').href='tel:'+p1;
+      document.getElementById('phone2').textContent=p2;document.getElementById('phone2').href='tel:'+p2;
+      document.getElementById('phone3').textContent=p3+' (Karachi)';document.getElementById('phone3').href='tel:'+p3;
+      document.getElementById('email1').textContent=em;document.getElementById('email1').href='mailto:'+em;
+      if(s.contact.footerDesc)document.getElementById('footer-desc').textContent=s.contact.footerDesc;
+    }
+    if(s.branding){
+      if(s.branding.logo&&s.branding.logo!==''){
+        setLogoImg(s.branding.logo);
+      }
+      if(s.branding.navText)document.getElementById('nav-logo-text').innerHTML=s.branding.navText;
+      if(s.branding.navSub)document.getElementById('nav-logo-sub').textContent=s.branding.navSub;
+    }
+    if(s.media){
+      if(s.media.videoSrc)setHeroVideoSource(s.media.videoSrc,'');
+      const vUrl=document.getElementById('a-video-url');
+      if(vUrl&&s.media.videoUrlInput!==undefined)vUrl.value=s.media.videoUrlInput;
+      if(s.media.brightness){
+        const slider=document.getElementById('a-video-brightness');
+        if(slider)slider.value=s.media.brightness;
+        previewVideoBrightness(s.media.brightness);
+      }
+    }
+    if(s.style){
+      document.documentElement.style.setProperty('--red',s.style.red||'#E8000D');
+      document.documentElement.style.setProperty('--yellow',s.style.yellow||'#FFD700');
+      document.documentElement.style.setProperty('--black',s.style.black||'#050505');
+      document.body.classList.remove('theme-light','theme-navy','theme-forest');
+      if(s.style.themeLight)document.body.classList.add('theme-light');
+      if(s.style.themeNavy)document.body.classList.add('theme-navy');
+      if(s.style.themeForest)document.body.classList.add('theme-forest');
+      document.body.classList.remove('font-default','font-cyber','font-modern');
+      if(s.style.fontDefault)document.body.classList.add('font-default');
+      if(s.style.fontCyber)document.body.classList.add('font-cyber');
+      if(s.style.fontModern)document.body.classList.add('font-modern');
+      const redInput=document.getElementById('a-color-red');
+      const yellowInput=document.getElementById('a-color-yellow');
+      const bgInput=document.getElementById('a-color-bg');
+      if(redInput&&s.style.red)redInput.value=s.style.red;
+      if(yellowInput&&s.style.yellow)yellowInput.value=s.style.yellow;
+      if(bgInput&&s.style.black)bgInput.value=s.style.black;
+    }
+    hydrateAdminInputsFromPage();
+  }catch(err){
+    console.warn('Could not load admin data:',err);
+  }
+}
+
 // ==================== ADMIN OPEN/CLOSE ====================
 function openAdmin(){
   document.getElementById('admin-overlay').classList.add('show');
@@ -2185,6 +2363,7 @@ function verifyAdmin(){
     document.getElementById('admin-login').style.display='none';
     document.getElementById('admin-dashboard').classList.add('show');
     buildAdminForms();
+    hydrateAdminInputsFromPage();
     updateBadges();
     renderInbox();
   }else{
@@ -2224,15 +2403,15 @@ function buildServicesAdmin(){
     </div>`;
   });
 }
-function addService(){adminData.services.push({icon:'🚚',title:'New Service',desc:'Service description here.'});buildServicesAdmin();}
-function removeService(i){adminData.services.splice(i,1);buildServicesAdmin();}
+function addService(){adminData.services.push({icon:'🚚',title:'New Service',desc:'Service description here.'});buildServicesAdmin();saveAdminData();}
+function removeService(i){adminData.services.splice(i,1);buildServicesAdmin();saveAdminData();}
 function applyServices(){
   adminData.services.forEach((s,i)=>{
     s.icon=document.getElementById('svc-icon-'+i)?.value||s.icon;
     s.title=document.getElementById('svc-title-'+i)?.value||s.title;
     s.desc=document.getElementById('svc-desc-'+i)?.value||s.desc;
   });
-  renderServices();showSuccess('services-success');
+  renderServices();saveAdminData();showSuccess('services-success');
 }
 function renderServices(){
   const grid=document.getElementById('services-grid');
@@ -2261,15 +2440,15 @@ function buildFleetAdmin(){
     </div>`;
   });
 }
-function addFleetRow(){adminData.fleet.push({name:'New Vehicle',size:'XX Ft',capacity:'X Ton'});buildFleetAdmin();}
-function removeFleetRow(i){adminData.fleet.splice(i,1);buildFleetAdmin();}
+function addFleetRow(){adminData.fleet.push({name:'New Vehicle',size:'XX Ft',capacity:'X Ton'});buildFleetAdmin();saveAdminData();}
+function removeFleetRow(i){adminData.fleet.splice(i,1);buildFleetAdmin();saveAdminData();}
 function applyFleet(){
   adminData.fleet.forEach((f,i)=>{
     f.name=document.getElementById('fl-name-'+i)?.value||f.name;
     f.size=document.getElementById('fl-size-'+i)?.value||f.size;
     f.capacity=document.getElementById('fl-cap-'+i)?.value||f.capacity;
   });
-  renderFleet();showSuccess('fleet-success');
+  renderFleet();saveAdminData();showSuccess('fleet-success');
 }
 function renderFleet(){
   const body=document.querySelector('.fleet-sizes');
@@ -2313,6 +2492,8 @@ function uploadTeamPhoto(input,idx){
     adminData.team[idx].photo=e.target.result;
     const prev=document.getElementById('tm-photo-preview-'+idx);
     if(prev){prev.src=e.target.result;prev.style.display='block';}
+    renderTeam();
+    saveAdminData();
   };
   reader.readAsDataURL(file);
 }
@@ -2322,7 +2503,7 @@ function applyTeam(){
     t.role=document.getElementById('tm-role-'+i)?.value||t.role;
     t.desc=document.getElementById('tm-desc-'+i)?.value||t.desc;
   });
-  renderTeam();showSuccess('team-success');
+  renderTeam();saveAdminData();showSuccess('team-success');
 }
 function renderTeam(){
   const grid=document.getElementById('team-grid');
@@ -2349,6 +2530,7 @@ function applyHero(){
   document.getElementById('stat2').textContent=document.getElementById('a-stat2').value;
   document.getElementById('stat3').textContent=document.getElementById('a-stat3').value;
   document.getElementById('stat4').textContent=document.getElementById('a-stat4').value;
+  saveAdminData();
   showSuccess('hero-success');
 }
 
@@ -2361,6 +2543,7 @@ function applyAbout(){
   document.getElementById('about-years').textContent=document.getElementById('a-about-years').value;
   const imgUrl=document.getElementById('a-about-img').value;
   if(imgUrl)document.getElementById('about-img').src=imgUrl;
+  saveAdminData();
   showSuccess('about-success');
 }
 function uploadAboutImg(input){
@@ -2371,6 +2554,7 @@ function uploadAboutImg(input){
     document.getElementById('a-about-img').value=e.target.result;
     const prev=document.getElementById('about-img-preview');
     prev.src=e.target.result;prev.style.display='block';
+    saveAdminData();
   };
   reader.readAsDataURL(file);
 }
@@ -2387,6 +2571,7 @@ function applyContact(){
   document.getElementById('phone3').textContent=p3+' (Karachi)';document.getElementById('phone3').href='tel:'+p3;
   document.getElementById('email1').textContent=em;document.getElementById('email1').href='mailto:'+em;
   document.getElementById('footer-desc').textContent=document.getElementById('a-footer-desc').value;
+  saveAdminData();
   showSuccess('contact-success');
 }
 
@@ -2430,12 +2615,17 @@ function uploadHeroVideo(input){
     alert('Please select a valid video file.');
     return;
   }
-
-  if(heroVideoBlobUrl){
-    URL.revokeObjectURL(heroVideoBlobUrl);
-  }
-  heroVideoBlobUrl=URL.createObjectURL(file);
-  setHeroVideoSource(heroVideoBlobUrl,file.type||'video/mp4');
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const dataUrl=e.target?.result;
+    if(typeof dataUrl!=='string')return;
+    setHeroVideoSource(dataUrl,file.type||'video/mp4');
+    const vUrl=document.getElementById('a-video-url');
+    if(vUrl)vUrl.value='';
+    saveAdminData();
+    showSuccess('media-success');
+  };
+  reader.readAsDataURL(file);
   input.value='';
 }
 
@@ -2443,6 +2633,7 @@ function applyHeroVideo(){
   const url=document.getElementById('a-video-url').value.trim();
   if(!url)return;
   setHeroVideoSource(url,'');
+  saveAdminData();
   showSuccess('media-success');
 }
 
@@ -2458,6 +2649,7 @@ function applyVideoBrightness(){
   const slider=document.getElementById('a-video-brightness');
   if(!slider)return;
   previewVideoBrightness(slider.value);
+  saveAdminData();
   showSuccess('media-success');
 }
 
@@ -2468,13 +2660,14 @@ function uploadLogo(input){
     setLogoImg(e.target.result);
     const prev=document.getElementById('logo-preview');
     prev.src=e.target.result;prev.style.display='block';
+    saveAdminData();
     showSuccess('logo-success');
   };
   reader.readAsDataURL(file);
 }
 function applyLogoUrl(){
   const url=document.getElementById('a-logo-url').value.trim();
-  if(url){setLogoImg(url);showSuccess('logo-success');}
+  if(url){setLogoImg(url);saveAdminData();showSuccess('logo-success');}
 }
 function setLogoImg(src){
   const img=document.getElementById('nav-logo-img');
@@ -2486,6 +2679,7 @@ function removeLogo(){
   const icon=document.getElementById('nav-logo-icon');
   img.src='';img.classList.remove('show');icon.classList.remove('hide');
   document.getElementById('logo-preview').style.display='none';
+  saveAdminData();
   showSuccess('logo-success');
 }
 function applyBrandName(){
@@ -2493,16 +2687,18 @@ function applyBrandName(){
   const sub=document.getElementById('a-brand-sub').value;
   document.getElementById('nav-logo-text').innerHTML=name.replace(/-(\w+)$/,'-<span>$1</span>');
   document.getElementById('nav-logo-sub').textContent=sub;
+  saveAdminData();
   showSuccess('logo-success');
 }
 
 function addTeamMember(){
   adminData.team.push({name:'New Member',role:'Position / Role',desc:'Description of responsibilities and expertise.',photo:''});
   buildTeamAdmin();updateTeamCountLabel();
+  saveAdminData();
 }
 function removeLastTeamMember(){
   if(adminData.team.length<=1){alert('Must have at least 1 team member.');return;}
-  if(confirm('Remove the last team member?')){adminData.team.pop();buildTeamAdmin();updateTeamCountLabel();}
+  if(confirm('Remove the last team member?')){adminData.team.pop();buildTeamAdmin();updateTeamCountLabel();saveAdminData();}
 }
 function updateTeamCountLabel(){
   const lbl=document.getElementById('team-count-label');
@@ -2512,11 +2708,13 @@ function updateTeamCountLabel(){
 function applyTheme(theme){
   document.body.classList.remove('theme-light','theme-navy','theme-forest');
   if(theme!=='dark')document.body.classList.add('theme-'+theme);
+  saveAdminData();
   showSuccess('style-success');
 }
 function applyFont(font){
   document.body.classList.remove('font-default','font-cyber','font-modern');
   document.body.classList.add('font-'+font);
+  saveAdminData();
   showSuccess('style-success');
 }
 function applyStyle(){
@@ -2526,6 +2724,7 @@ function applyStyle(){
   document.documentElement.style.setProperty('--red',red);
   document.documentElement.style.setProperty('--yellow',yellow);
   document.documentElement.style.setProperty('--black',bg);
+  saveAdminData();
   showSuccess('style-success');
 }
 function resetStyle(){
@@ -2535,10 +2734,12 @@ function resetStyle(){
   document.getElementById('a-color-red').value='#E8000D';
   document.getElementById('a-color-yellow').value='#FFD700';
   document.getElementById('a-color-bg').value='#050505';
+  saveAdminData();
 }
 
 function saveAll(){
   applyHero();applyAbout();applyServices();applyFleet();applyTeam();applyContact();
+  saveAdminData();
   const banner=document.createElement('div');
   banner.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#00c864,#006432);color:#fff;padding:14px 32px;border-radius:8px;font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:2px;z-index:999999;box-shadow:0 10px 40px rgba(0,200,100,0.4);';
   banner.textContent='✓ ALL CHANGES SAVED SUCCESSFULLY';
@@ -2573,6 +2774,7 @@ document.addEventListener('touchstart',()=>{
 
 // Init badges on page load
 updateBadges();
+loadAdminData();
 previewVideoBrightness(document.getElementById('a-video-brightness')?.value||100);
 
 // Helpful runtime signal if media URL/file cannot be played
