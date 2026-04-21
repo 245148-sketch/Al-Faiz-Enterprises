@@ -1567,7 +1567,10 @@
       <h1>⚙ <span>AL-FAIZ</span> CONTROL CENTER</h1>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn-yellow" onclick="saveAll()">💾 Save All Changes</button>
+        <button class="btn-save" onclick="exportAdminBackup()">⬇ Export Backup</button>
+        <button class="btn-save" onclick="triggerAdminImport()">⬆ Import Backup</button>
         <button class="admin-close" onclick="closeAdmin()">✕ Exit Admin</button>
+        <input type="file" id="admin-import-file" accept="application/json,.json" style="display:none" onchange="importAdminBackup(this)">
       </div>
     </div>
 
@@ -2141,6 +2144,8 @@ function filterMessages(filter, btn){
 // ==================== ADMIN DATA ====================
 const ADMIN_PASS='Mudassir87714';
 const ADMIN_DATA_KEY='alfaiz_admin_data_v2';
+const MAX_IMAGE_UPLOAD_MB=1.5;
+const MAX_VIDEO_UPLOAD_MB=3;
 let adminData={
   services:[
     {icon:'🚛',title:'Containerised Cargo Handling',desc:'Complete handling of both hazardous and non-hazardous goods and chemicals in fully certified containers with strict safety protocols.'},
@@ -2487,6 +2492,11 @@ function buildTeamAdmin(){
 }
 function uploadTeamPhoto(input,idx){
   const file=input.files[0];if(!file)return;
+  if(file.size>(MAX_IMAGE_UPLOAD_MB*1024*1024)){
+    alert(`Team photo is too large for browser storage. Use max ${MAX_IMAGE_UPLOAD_MB}MB image or host it online and use URL-based image.`);
+    input.value='';
+    return;
+  }
   const reader=new FileReader();
   reader.onload=e=>{
     adminData.team[idx].photo=e.target.result;
@@ -2615,6 +2625,11 @@ function uploadHeroVideo(input){
     alert('Please select a valid video file.');
     return;
   }
+  if(file.size>(MAX_VIDEO_UPLOAD_MB*1024*1024)){
+    alert(`Video file is too large for browser local storage. Upload this video to Cloudinary/Drive/CDN and paste a direct URL instead. Recommended local upload max ${MAX_VIDEO_UPLOAD_MB}MB.`);
+    input.value='';
+    return;
+  }
   const reader=new FileReader();
   reader.onload=e=>{
     const dataUrl=e.target?.result;
@@ -2632,9 +2647,76 @@ function uploadHeroVideo(input){
 function applyHeroVideo(){
   const url=document.getElementById('a-video-url').value.trim();
   if(!url)return;
+  if(/^file:/i.test(url)){
+    alert('file:// URLs only work on your own computer. Use a public direct video URL (https://...) for all devices.');
+    return;
+  }
   setHeroVideoSource(url,'');
   saveAdminData();
   showSuccess('media-success');
+}
+
+function exportAdminBackup(){
+  try{
+    saveAdminData();
+    const raw=localStorage.getItem(ADMIN_DATA_KEY);
+    if(!raw){
+      alert('No saved admin data found to export.');
+      return;
+    }
+    const blob=new Blob([raw],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='alfaiz-admin-backup.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    alert('Backup exported. Import this JSON on another device to load the same admin settings and media.');
+  }catch(err){
+    console.warn('Could not export admin backup:',err);
+    alert('Backup export failed. Please try again.');
+  }
+}
+
+function triggerAdminImport(){
+  const input=document.getElementById('admin-import-file');
+  if(!input)return;
+  input.click();
+}
+
+function importAdminBackup(input){
+  const file=input?.files?.[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const text=e.target?.result;
+      if(typeof text!=='string')throw new Error('Invalid file');
+      const parsed=JSON.parse(text);
+      const hasNewShape=parsed?.adminData&&Array.isArray(parsed.adminData.services)&&Array.isArray(parsed.adminData.fleet)&&Array.isArray(parsed.adminData.team);
+      const hasOldShape=Array.isArray(parsed?.services)&&Array.isArray(parsed?.fleet)&&Array.isArray(parsed?.team);
+      if(!hasNewShape&&!hasOldShape){
+        throw new Error('Backup format not recognized.');
+      }
+      localStorage.setItem(ADMIN_DATA_KEY,text);
+      loadAdminData();
+      buildAdminForms();
+      hydrateAdminInputsFromPage();
+      renderServices();
+      renderFleet();
+      renderTeam();
+      updateTeamCountLabel();
+      alert('Backup imported successfully.');
+    }catch(err){
+      console.warn('Could not import admin backup:',err);
+      alert('Import failed. Please choose a valid backup JSON file.');
+    }finally{
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
 }
 
 function previewVideoBrightness(value){
